@@ -10,35 +10,22 @@ module powerbi.visuals {
             
             var deferred = $.Deferred();
             
-            var existentScript = document.getElementById(alias);
-            if (existentScript != null) { 
-				$('script[src="' + uri + '"]').each(function () {
-                    if (this.src.indexOf('uri') >= 0) {
-                        console.log('removed ' + this.src);
-                        $(this).remove();
-                    }
-                });
-            }
-               var body= document.getElementsByTagName('body')[0];
-               var script= document.createElement('script');
-               script.id = alias;
-               script.type= 'text/javascript';
-               script.onerror = (ev: Event) => {
-                   deferred.reject();
-               };               
-               script.onload = (ev : Event ) => {
-                   //if event callback approach is not used, resolve on load
-                   if (!callback){
+            $.getScript(uri, (d, status, jqxhr)=>{ 
+                if (jqxhr.status == 200)
+                {
+                    if (!callback){
                        deferred.resolve();
                    }
-               }
-               body.appendChild(script);
-               script.src= uri;
-               if(callback)
-               {
-                this._timeoutHandle = setTimeout(()=>{this.doLoadedCallback(deferred, callback);}, 500);
-               }
-               return deferred;
+                   else {
+                       this._timeoutHandle = setTimeout(()=>{this.doLoadedCallback(deferred, callback);}, 500);
+                   }
+                }
+                else {
+                    deferred.reject();
+                }                
+             });
+      
+             return deferred;
         }
         private doLoadedCallback(deferred : JQueryDeferred<any>, callback: ()=>boolean) : void
         {
