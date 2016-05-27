@@ -24,6 +24,43 @@ declare module google.maps.visualization{
 
 
 module powerbi.visuals {
+    export class ScriptDependency { 
+        private _timeoutHandle : number;
+        public addScript(alias: string, uri: string, callback?:()=>boolean) {
+            
+            var deferred = $.Deferred();
+            
+            $.getScript(uri, (d, status, jqxhr)=>{ 
+                if (jqxhr.status == 200)
+                {
+                    if (!callback){
+                       deferred.resolve();
+                   }
+                   else {
+                       this._timeoutHandle = setTimeout(()=>{this.doLoadedCallback(deferred, callback);}, 500);
+                   }
+                }
+                else {
+                    deferred.reject();
+                }                
+             });
+      
+             return deferred;
+        }
+        private doLoadedCallback(deferred : JQueryDeferred<any>, callback: ()=>boolean) : void
+        {
+            if (callback())
+            {
+                clearTimeout(this._timeoutHandle);
+                deferred.resolve();
+            }
+            else
+            {
+               console.log("all kinds of having to retry");
+               this._timeoutHandle = setTimeout(()=>{this.doLoadedCallback(deferred, callback);}, 500);
+            }
+        }
+    }
     export interface IWeightLocation {
         location: ILatlong;
         weight: number;
@@ -101,6 +138,7 @@ module powerbi.visuals {
         public isMapReady : boolean = false;
         private isDataAvailable : boolean = false;
         private data: GMapsVisualData;
+        private latestUpdate: DataView[];
 
         
         /** This is called once when the visual is initialially created */
@@ -108,10 +146,19 @@ module powerbi.visuals {
             options.element.append("<div id='map' style='height:"
                 +options.viewport.height+"px' />");
 			
-			this.addScript("mapsdk", "https://maps.googleapis.com/maps/api/js?key=AIzaSyA69_K4SMeQVnVnTxJtlIQG9R1tXkDEleQ&callback=visual.onMapsReady&libraries=visualization");
+			 var deps = new ScriptDependency();
+            deps.addScript("babylonjs", "https://maps.googleapis.com/maps/api/js?key=AIzaSyA69_K4SMeQVnVnTxJtlIQG9R1tXkDEleQ&callback=visual.onMapsReady&libraries=visualization",
+                ():boolean=>{ return (typeof google)!=undefined; })
+                .done(()=>{
+                    console.log("done loading");                    
+                })
+                .fail(()=>{
+                    console.log("error loaidng dependency");
+                });	
+                
         }
 
-        public drawData() : void {
+        public drawData(dataViews : DataView[]) : void {
             if (!this.visual.isMapReady || !this.visual.isDataAvailable) {                
             window.console.log('no map ready or data ready');
             return;
@@ -147,37 +194,13 @@ module powerbi.visuals {
             zoom: 16
           });         
           this.isMapReady = true;
-          this.drawData();
+          this.drawData(this.latestUpdate);
         }
         public update(options: VisualUpdateOptions) {
-            
+            this.latestUpdate = options.dataViews;
             this.isDataAvailable = true;
             (<any>window).isDataAvailable = true;//gmaps entry
-            this.drawData();
-        }
-
-        private addScript(alias: string, uri: string) {
-         var existentScript = document.getElementById(alias);
-            if (existentScript != null) {
-                if ((<any>window).google !== undefined && google.maps !== undefined) {
-                delete google.maps;
-                $('script').each(function () {
-                    if (this.src.indexOf('googleapis.com/maps') >= 0
-                            || this.src.indexOf('maps.gstatic.com') >= 0
-                            || this.src.indexOf('earthbuilder.googleapis.com') >= 0) {
-                        // console.log('removed', this.src);
-                        $(this).remove();
-                    }
-                });
-            }
-            }
-               var body= document.getElementsByTagName('body')[0];
-               var script= document.createElement('script');
-               script.id = alias;
-               script.type= 'text/javascript';               
-               body.appendChild(script);
-               script.src= uri;
-
+            this.drawData(options.dataViews);
         }
 	}
 }

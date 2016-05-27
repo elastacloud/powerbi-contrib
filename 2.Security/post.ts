@@ -48,17 +48,17 @@ module powerbi.visuals {
                 options.element.empty();
             }
             
-			this._button = options.element.html("<button id=\"button1\">Click Me</button>")
-                            .unbind("click") 
-                           .click((event) => {
-				$.post("https://httpbin.org/post", options.dataViews, 
-                    (data, status) => { console.log(status); console.log(data);});
-			});
+			this._button = options.element.html("<button id=\"button1\">Click Me</button>");
         }
 
         /** Update is called for data updates, resizes & formatting changes */
         public update(options: VisualUpdateOptions) {
-            
+            console.log(options.dataViews);
+            this._button.unbind("click") 
+                        .click((event) => {
+				$.post("https://httpbin.org/post", JSON.stringify(options.dataViews), 
+                    (data, status) => { console.log(status); console.log(data);}, "json");
+			});
         }
     }
 }
