@@ -1,0 +1,28 @@
+{
+  "name": "powerbi-contrib",
+  "version": "1.0.0",
+  "description": "Tools for easier Custom Visuals development",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AndyCross/powerbi-contrib.git"
+  },
+  "keywords": [
+    "powerbi",
+    "custom",
+    "visuals",
+    "extensibility"
+  ],
+  "author": "Andy Cross",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AndyCross/powerbi-contrib/issues"
+  },
+  "homepage": "https://github.com/AndyCross/powerbi-contrib#readme"
+}
