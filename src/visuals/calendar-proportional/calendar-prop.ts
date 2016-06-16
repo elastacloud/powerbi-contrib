@@ -1,6 +1,6 @@
 /*
  *  Power BI Visualizations
- *  Calendar. V0.4.1
+ *  Calendar. V0.4.2
  *
  *  Copyright (c) Elastcloud Ltd
  *  All rights reserved. 
@@ -44,6 +44,7 @@ module powerbi.visuals {
         color:string;
         date: Date;
         value: number;
+        domainMax: number;
         selector: SelectionId;
         dateStr: string;
         tooltipInfo?: TooltipDataItem[];
@@ -104,19 +105,6 @@ module powerbi.visuals {
                             displayName: 'Cell fill',
                             type: { fill: { solid: { color: true } } }
                         }
-                    }
-                },
-                drawLegend: {
-                    displayName: 'Draw Legend?',
-                    properties: {
-                        show: {
-                            displayName: data.createDisplayNameGetter("Visual_Show"),
-                            type: { bool: true }
-                        },
-                        transparency: {//visibleGapsPercentage
-                            displayName: 'Visible gaps',
-                            type: { numeric: true }
-                        },
                     }
                 },
                 general: {
@@ -185,7 +173,8 @@ module powerbi.visuals {
         private drawMonthPath = false;
         private drawLegend = false;
         private drawLabels = true;
-        private invertSortOrder = true;
+        private invertSortOrder = false;
+        private relativeSize = false;
         private width = 1016;
         private height = 144;
         private cellSize = 18; // cell size
@@ -379,8 +368,8 @@ module powerbi.visuals {
                 return calendarViewModel.values[d]
             })
                 .enter().append("rect")
-                .attr("width", this.cellSize - 1)
-                .attr("height", this.cellSize - 1)
+                .attr("width", this.getSize)
+                .attr("height", this.getSize)
                 .attr("class", "day")
                 .style({
                     "fill": (d) => d.color,
@@ -415,12 +404,15 @@ module powerbi.visuals {
 
             this.renderTooltip(this.rect);
             
-            svg.selectAll(".month")
-                .data(function (d) { return d3.time.months(new Date(d, 0, 1), new Date(d + 1, 0, 1)); })
-                .enter().append("path")
-                .attr("class", "month")
-                .attr("d", this.monthPath)
-                .attr("stroke", "#bbbbbb");
+            if (this.drawMonthPath)
+            {
+                svg.selectAll(".month")
+                    .data(function (d) { return d3.time.months(new Date(d, 0, 1), new Date(d + 1, 0, 1)); })
+                    .enter().append("path")
+                    .attr("class", "month")
+                    .attr("d", this.monthPath)
+                    .attr("stroke", "#bbbbbb");
+            }
 
             if (this.drawLegend) {
                 var legendGroup = d3.select(this.element).insert("svg", ":first-child")
@@ -543,6 +535,10 @@ module powerbi.visuals {
                     }
                     else return null;
                 });
+                returnSet = returnSet.map((d)=>{
+                    d.domainMax = maxValue;
+                    return d;                    
+                });
             } else if (this.isTable(dataView))
             {
                 var dateColumns = dataView.table.columns.map((v, i) => {
@@ -643,8 +639,31 @@ module powerbi.visuals {
         }
 
         private getDaysOfYear = (year: number) => { return d3.time.days(new Date(year, 0, 1), new Date(year + 1, 0, 1)); };
-        public getXPosition = (date: DateValue) => { return (d3.time.weekOfYear(date.date) * this.cellSize); };
-        public getYPosition = (date: DateValue) => { return (date.date.getDay() * this.cellSize); };
+        public getXPosition = (date: DateValue) => { 
+            var position = (d3.time.weekOfYear(date.date) * this.cellSize); 
+            if (!this.relativeSize || date.value === null)
+                return position;
+                
+            var offset = date.value / date.domainMax;
+            
+            return position + ((this.cellSize-(offset*this.cellSize))/2);
+            };
+        public getYPosition = (date: DateValue) => {
+             var position =  (date.date.getDay() * this.cellSize); 
+            if (!this.relativeSize || date.value === null)
+                return position;
+                
+             var offset = date.value / date.domainMax;
+            
+            return position + ((this.cellSize-(offset*this.cellSize))/2);
+             };
+        public getSize = (date:DateValue) => {
+            if (!this.relativeSize || date.value === null)
+            {
+                return this.cellSize;
+            }
+            return (date.value/date.domainMax) * this.cellSize;
+        }
         private monthPath = (t0) => {
             var t1 = new Date(t0.getFullYear(), t0.getMonth() + 1, 0), d0 = t0.getDay(), w0 = d3.time.weekOfYear(t0), d1 = t1.getDay(), w1 = d3.time.weekOfYear(t1);
             return "M" + (w0 + 1) * this.cellSize + "," + d0 * this.cellSize + "H" + w0 * this.cellSize + "V" + 7 * this.cellSize + "H" + w1 * this.cellSize + "V" + (d1 + 1) * this.cellSize + "H" + (w1 + 1) * this.cellSize + "V" + 0 + "H" + (w0 + 1) * this.cellSize + "Z";

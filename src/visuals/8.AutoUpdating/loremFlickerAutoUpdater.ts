@@ -1,6 +1,14 @@
 /// <reference path="../../typings/index.d.ts" />
+/// <reference path="../../lib/AutoUpdatingVisual.ts" />
+
+declare module powerbi.visuals {
+    class LoremFlickr implements IVisual {
+        init(data:any);
+    }
+}
+
 module powerbi.visuals {
-   export class LoremFlickr implements IVisual {
+   export class LoremFlickrAutoUpdater extends AutoUpdatingVisual implements IVisual {
         public static capabilities: VisualCapabilities = {
             // This is what will appear in the 'Field Wells' in reports
             dataRoles: [
@@ -38,30 +46,11 @@ module powerbi.visuals {
             }
         };
         
-        private _img:JQuery;
-        private _ele:JQuery;
-
-        /** This is called once when the visual is initialially created */
-        public init(options: VisualInitOptions): void {
-            this._ele = options.element;
-            
-            this.drawKitten(options.viewport);            
-        }
-
-        /** Update is called for data updates, resizes & formatting changes */
-        public update(options: VisualUpdateOptions) {
-            this.drawKitten(options.viewport);
-        }
-        
-        private drawKitten(viewport : IViewport)
-        {
-            if (this._img != null)
-            { 
-                this._ele.empty();
-            }
-            
-			this._img = this._ele.html("<img src='https://loremflickr.com/"+Math.floor(viewport.width)+"/"+Math.floor(viewport.height)+"/kitten/all'>");
-            
+        /**
+         *
+         */
+        constructor() {
+            super("helloworld", "https://iotinn.blob.core.windows.net/assets/loremflicker.js", ()=>{return new powerbi.visuals.LoremFlickr();});
         }
     }
 }
