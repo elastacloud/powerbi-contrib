@@ -59,7 +59,7 @@ var Pbic = (function(){
     }
 
     function createVisual(visualName) {
-        var output = fs.createWriteStream(visualName + '.zip');
+        var output = fs.createWriteStream(visualName + '.pbiviz');
         var archive = archiver('zip');
 
         output.on('close', function () {
