@@ -167,9 +167,9 @@ module powerbi.visuals {
                 }
             }
         };
-        
-        
 
+        private isLoaded:boolean;
+        private shouldSelectLastValue:boolean = true;
         private drawMonthPath = false;
         private drawLegend = false;
         private drawLabels = true;
@@ -229,6 +229,24 @@ module powerbi.visuals {
                 dataView = dataViews[0];
             }
             this.draw(dataView, this.element, options.viewport.width, options.viewport.height, viewModel, this.colors);
+            
+            if (!this.isLoaded)
+            {
+              this.isLoaded = true;   
+              if (this.shouldSelectLastValue)
+              {
+                  var lastYear = viewModel.values[viewModel.yearsList[viewModel.yearsList.length-1]];
+                  var selector = 
+                            visuals.SelectionIdBuilder.builder()
+                                .withCategory(dataView.categorical.categories[0], lastYear.length-1)
+                                .withMeasure(dataView.categorical.values[0].source.queryName)
+                                .createSelectionId();
+                  
+                  this.selectionManager.select(selector);
+                  this.hostService.persistProperties(this.createChangeForFilterProperty(selector, slicerProps.filterPropertyIdentifier));
+
+              }
+            }
         }
 
         private renderTooltip(selection: D3.Selection): void {
@@ -373,7 +391,7 @@ module powerbi.visuals {
                 .attr("class", "day")
                 .style({
                     "fill": (d) => d.color,
-                    "stroke": (d) => d.selector && d.selector.getKey() === this.selectedKey ? '#333' : null,
+                    "stroke": (d) => d.selector && d.selector.getKey() === this.selectedKey ? '#333' : '#000',
                     "stroke-width": '1px',
                  })
                 .attr("x", this.getXPosition)
