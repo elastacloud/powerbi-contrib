@@ -1,2 +1,12 @@
 #!/usr/bin/env node
-require('./../lib/index.js');
+if(process.argv.indexOf('createviz') != -1){
+    var CreateViz = require('./../lib/create-viz.js');
+    CreateViz.run();
+} else if(process.argv.indexOf('tscompile') != -1){
+    var gulp = require('./../lib/ts-compile.js');
+    if (gulp.tasks.compile) {
+        console.log('Compile task started.');
+        gulp.start('compile');
+    }
+}
+

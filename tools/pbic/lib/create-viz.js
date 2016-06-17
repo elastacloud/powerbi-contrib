@@ -4,7 +4,7 @@ var archiver = require('archiver');
 var rmdir = require('rimraf');
 var argv = require('optimist').argv;
 
-var Pbic = (function(){
+var CreateViz = (function(){
     //npm run index --name=name
     var visualName = argv.name || null;
     var sourceFolder = argv.source || null;
@@ -254,5 +254,5 @@ var Pbic = (function(){
 })();
 
 
-Pbic.run(); //comment this if don't wan't execute from a CMD
-exports.run = Pbic;
+//CreateViz.run(); //comment this if don't wan't execute from a CMD
+module.exports = CreateViz;
