@@ -2,11 +2,13 @@ var fs = require('fs');
 var path = require('path');
 var archiver = require('archiver');
 var rmdir = require('rimraf');
+var argv = require('optimist').argv;
 
 var Pbic = (function(){
     //npm run index --name=name
-    var visualName = (typeof process.env.npm_config_name) != 'undefined' ? process.env.npm_config_name : null;
-    var sourceFolder = (typeof process.env.npm_config_source) != 'undefined' ? process.env.npm_config_source : null;;
+    var visualName = argv.name || null;
+    var sourceFolder = argv.source || null;
+    //var sourceFolder = (typeof process.env.npm_config_source) != 'undefined' ? process.env.npm_config_source : null;;
 
     var tmpDir = 'tmp';
     var resourcesDir = 'resources';

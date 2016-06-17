@@ -12,5 +12,13 @@
   "devDependencies": {
     "archiver": "^1.0.0",
     "rimraf": "^2.5.2"
+  },
+  "directories": {
+    "bin": "./bin"
+  },
+  "dependencies": {
+    "archiver": "^1.0.0",
+    "rimraf": "^2.5.2",
+    "optimist": "^0.6.1"
   }
 }
