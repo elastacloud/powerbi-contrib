@@ -9,4 +9,22 @@ if(process.argv.indexOf('createviz') != -1){
         gulp.start('compile');
     }
 }
+else if(process.argv.indexOf('help') != -1){
+   console.log('\n\n\t\t\tPBIC HELP.\n');
+   console.log('\tAvailable commands:\n');
+   console.log('\tpbic tscompile\n');
+   console.log('\tParameters:\n');
+   console.log('\t\t--source - path to folder with ts files (optional)');
+   console.log('\t\t--dest - path to destination folder (optional)');
+   console.log('\t\t--out - name of output js file (optional)');
+   console.log('\n\tExample:\n');
+   console.log('\tpbic tscompile --source=my-project --dest=dest-folder --out=build.js');
+   console.log('\n\n');
+   console.log('\tpbic createviz\n');
+   console.log('\tParameters:\n');
+   console.log('\t\t--source - path to folder with files (required)');
+   console.log('\t\t--name - name of final .pbiviz package (optional if you have a correct package.json file into\n');
+   console.log('\t\t\tyour folder and required if not.\n');
+   console.log('\tpbic createviz --name=my-viz --source=my-folder\n');
+}
 
