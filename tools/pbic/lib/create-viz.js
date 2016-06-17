@@ -7,7 +7,7 @@ var argv = require('optimist').argv;
 var CreateViz = (function(){
     //npm run index --name=name
     var visualName = argv.name || null;
-    var sourceFolder = argv.source || null;
+    var sourceFolder = argv.source || ".";
     //var sourceFolder = (typeof process.env.npm_config_source) != 'undefined' ? process.env.npm_config_source : null;;
 
     var tmpDir = 'tmp';
@@ -16,10 +16,6 @@ var CreateViz = (function(){
     var packageJson = null;
 
     function init(){
-        if (!sourceFolder) {
-            console.log('You \'ve Missed a source folder! Use format: npm run index --name=name(optional if you have a package json) --source=path/to/source/folder');
-            return false;
-        }
         if(!visualName && sourceFolder){
             try{
                 //reading package.json file

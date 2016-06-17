@@ -22,7 +22,7 @@ else if(process.argv.indexOf('help') != -1){
    console.log('\n\n');
    console.log('\tpbic create\n');
    console.log('\tParameters:\n');
-   console.log('\t\t--source - path to folder with files (required)');
+   console.log('\t\t--source - path to folder with files (optional)');
    console.log('\t\t--name - name of final .pbiviz package (optional if you have a correct package.json file into\n');
    console.log('\t\t\tyour folder and required if not.\n');
    console.log('\tpbic create --name=my-viz --source=my-folder\n');
