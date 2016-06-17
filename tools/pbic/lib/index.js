@@ -47,7 +47,7 @@ var Pbic = (function(){
         createDirectory(tmpDir + '/' + resourcesDir);
     }
 
-    function removeDirectory() {
+    function removeTmpDirectory() {
         rmdir(tmpDir, function (error) {
             if(error) console.log(error);
         });
@@ -67,7 +67,8 @@ var Pbic = (function(){
             console.log(visualName +'.pbiviz ' + archive.pointer() + ' total bytes');
             console.log('archiver has been finalized and the output file descriptor has closed.');
 
-            removeDirectory();
+
+            removeTmpDirectory();
         });
 
         archive.on('error', function (err) {
