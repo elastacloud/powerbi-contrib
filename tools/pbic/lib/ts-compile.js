@@ -4,7 +4,7 @@ var argv = require('optimist').argv;
 
 var source = argv.source || 'source';
 var out = argv.out || 'output.js';
-var dest = argv.dest || 'dest/';
+var dest = argv.dest || './';
 
 gulp.task('compile', function(){
     gulp.src([source + '/*.ts'])
