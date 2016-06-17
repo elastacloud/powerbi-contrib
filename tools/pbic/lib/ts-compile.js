@@ -3,7 +3,7 @@ var typescript = require('gulp-typescript');
 var argv = require('optimist').argv;
 
 var source = argv.source || 'source';
-var out = argv.out || 'output.js';
+var out = argv.out || 'visual.js';
 var dest = argv.dest || './';
 
 gulp.task('compile', function(){
