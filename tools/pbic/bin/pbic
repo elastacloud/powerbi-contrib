@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-if(process.argv.indexOf('createviz') != -1){
+if(process.argv.indexOf('create') != -1){
     var CreateViz = require('./../lib/create-viz.js');
     CreateViz.run();
-} else if(process.argv.indexOf('tscompile') != -1){
+} else if(process.argv.indexOf('tsc') != -1){
     var gulp = require('./../lib/ts-compile.js');
     if (gulp.tasks.compile) {
         console.log('Compile task started.');
@@ -12,19 +12,19 @@ if(process.argv.indexOf('createviz') != -1){
 else if(process.argv.indexOf('help') != -1){
    console.log('\n\n\t\t\tPBIC HELP.\n');
    console.log('\tAvailable commands:\n');
-   console.log('\tpbic tscompile\n');
+   console.log('\tpbic tsc\n');
    console.log('\tParameters:\n');
    console.log('\t\t--source - path to folder with ts files (optional)');
    console.log('\t\t--dest - path to destination folder (optional)');
    console.log('\t\t--out - name of output js file (optional)');
    console.log('\n\tExample:\n');
-   console.log('\tpbic tscompile --source=my-project --dest=dest-folder --out=build.js');
+   console.log('\tpbic tsc --source=my-project --dest=dest-folder --out=build.js');
    console.log('\n\n');
-   console.log('\tpbic createviz\n');
+   console.log('\tpbic create\n');
    console.log('\tParameters:\n');
    console.log('\t\t--source - path to folder with files (required)');
    console.log('\t\t--name - name of final .pbiviz package (optional if you have a correct package.json file into\n');
    console.log('\t\t\tyour folder and required if not.\n');
-   console.log('\tpbic createviz --name=my-viz --source=my-folder\n');
+   console.log('\tpbic create --name=my-viz --source=my-folder\n');
 }
 
