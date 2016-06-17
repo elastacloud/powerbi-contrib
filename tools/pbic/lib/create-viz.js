@@ -83,7 +83,7 @@ var CreateViz = (function(){
     }
 
     function createPackageJson(files){
-
+        var guid = visualName + Math.floor(Math.random()*461324395950);
         var settings = {
             "build": "1.0.0",
             "version": "1.0.0",
@@ -96,7 +96,7 @@ var CreateViz = (function(){
                 "name": visualName,
                 "version": "0.0.1",
                 "displayName": visualName,
-                "guid": "",
+                "guid": guid,
                 "description": visualName,
                 "supportUrl": "http://www.elastacloud.com"
             },
