@@ -4,13 +4,26 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "index": "node ./lib/index.js"
+    "index": "node ./lib/create-viz.js"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
     "archiver": "^1.0.0",
+    "gulp": "^3.9.1",
+    "gulp-typescript": "^2.13.6",
+    "rimraf": "^2.5.2"
+  },
+  "preferGlobal": "true",
+  "directories": {
+    "bin": "./bin"
+  },
+  "dependencies": {
+    "archiver": "^1.0.0",
+    "gulp": "^3.9.1",
+    "gulp-typescript": "^2.13.6",
+    "optimist": "^0.6.1",
     "rimraf": "^2.5.2"
   }
 }
