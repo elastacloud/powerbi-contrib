@@ -109,18 +109,22 @@ module powerbi.visuals {
                 },
                 general: {
                     displayName: data.createDisplayNameGetter('Visual_General'),
-                    properties: {
-                        formatString: {
-                            type: { formatting: { formatString: true } },
+                    properties: {                    
+                        drawMonthPath: {
+                            displayName: "Draw Month Path?",
+                            type: { bool: true }
                         },
-                        filter: {
-                            type: { filter: {} },
-                            rule: {
-                                output: {
-                                    property: 'selected',
-                                    selector: ['Values'],
-                                }
-                            }
+                        drawLegend: {
+                            displayName: "Draw Legend?",
+                            type: { bool: true }
+                        },
+                        drawLabels: {
+                            displayName: "Draw Labels?",
+                            type: { bool: true }
+                        },
+                        invertSortOrder: {
+                            displayName: "Ascending?",
+                            type: { bool: true }
                         },
                     },
                 },
@@ -302,6 +306,22 @@ module powerbi.visuals {
                     };
                     instances.push(cellColor);
                     break;
+                 case "general": {
+                    var general: VisualObjectInstance = {
+                        objectName: "general",
+                        displayName: "general",
+                        selector: null,
+                        properties: {
+                            drawMonthPath: this.drawMonthPath,
+                            drawLabels: this.drawLabels,
+                            drawLegend:this.drawLegend,
+                            invertSortOrder:this.invertSortOrder
+                        }
+                    };
+
+                    instances.push(general);
+                    break;
+                }
             }
             
             return instances;
@@ -515,6 +535,24 @@ module powerbi.visuals {
         }
         private convert(dataView: DataView, colors: IDataColorPalette): CalendarViewModel {
             window.console.log(dataView);
+            
+            var objects:any = dataView.metadata.objects;
+            
+            if (objects && objects.general) {
+                if (objects.general.drawMonthPath !== null) {
+                    this.drawMonthPath = objects.general.drawMonthPath;                
+                }
+                if (objects.general.drawLabels !== null) {
+                    this.drawLabels = objects.general.drawLabels;                
+                }
+                if (objects.general.drawLegend !== null) {
+                    this.drawLegend = objects.general.drawLegend;                
+                }
+                if (objects.general.invertSortOrder !== null) {
+                    this.invertSortOrder = objects.general.invertSortOrder;                
+                }
+            }          
+            
             if (dataView && dataView.metadata.objects) {
                 var cellColorObj = dataView.metadata.objects['cellColor'];
                  if (cellColorObj && cellColorObj['fill']) {
