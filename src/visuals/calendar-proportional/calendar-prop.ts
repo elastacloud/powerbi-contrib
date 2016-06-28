@@ -1,6 +1,6 @@
 /*
  *  Power BI Visualizations
- *  Calendar. V0.4.2
+ *  Calendar. V0.5.1
  *
  *  Copyright (c) Elastcloud Ltd
  *  All rights reserved. 
@@ -63,6 +63,15 @@ module powerbi.visuals {
             fill: <DataViewObjectPropertyIdentifier>{ objectName: 'dataPoint', propertyName: 'fill' },
         },
     };
+    
+    export interface CalendarSettings {
+        shouldSelectLastValue:boolean;
+        drawMonthPath: boolean;
+        drawLegend:boolean;
+        drawLabels:boolean;
+        invertSortOrder:boolean;
+        relativeSize:boolean;
+    }
 
     export class CalendarVisual implements IVisual {
         public static capabilities: VisualCapabilities = {
@@ -126,6 +135,14 @@ module powerbi.visuals {
                             displayName: "Ascending?",
                             type: { bool: true }
                         },
+                        relativeSize: {
+                            displayName: "Relative?",
+                            type: { bool: true }
+                        },
+                        shouldSelectLastValue: {
+                            displayName: "Hello?",
+                            type: { bool: true }
+                        },
                     },
                 },
                 dataPoint: {
@@ -173,12 +190,14 @@ module powerbi.visuals {
         };
 
         private isLoaded:boolean;
-        private shouldSelectLastValue:boolean = true;
-        private drawMonthPath = false;
-        private drawLegend = false;
-        private drawLabels = true;
-        private invertSortOrder = false;
-        private relativeSize = false;
+        private settings:CalendarSettings = {
+            shouldSelectLastValue: true,
+            drawMonthPath: false,
+            drawLegend: false,
+            drawLabels: true,
+            invertSortOrder: false,
+            relativeSize: false
+        }
         private width = 1016;
         private height = 144;
         private cellSize = 18; // cell size
@@ -237,7 +256,7 @@ module powerbi.visuals {
             if (!this.isLoaded)
             {
               this.isLoaded = true;   
-              if (this.shouldSelectLastValue)
+              if (this.settings.shouldSelectLastValue)
               {
                   var lastYear = viewModel.values[viewModel.yearsList[viewModel.yearsList.length-1]];
                   var selector = 
@@ -309,13 +328,15 @@ module powerbi.visuals {
                  case "general": {
                     var general: VisualObjectInstance = {
                         objectName: "general",
-                        displayName: "general",
+                        displayName: "Configuration",
                         selector: null,
                         properties: {
-                            drawMonthPath: this.drawMonthPath,
-                            drawLabels: this.drawLabels,
-                            drawLegend:this.drawLegend,
-                            invertSortOrder:this.invertSortOrder
+                            drawMonthPath: this.settings.drawMonthPath,
+                            drawLabels: this.settings.drawLabels,
+                            drawLegend:this.settings.drawLegend,
+                            invertSortOrder:this.settings.invertSortOrder,
+                            shouldSelectLastValue:this.settings.shouldSelectLastValue,
+                            relativeSize:this.settings.relativeSize
                         }
                     };
 
@@ -338,7 +359,7 @@ module powerbi.visuals {
             var colorScale = colors.getNewColorScale();
             var yearslist = calendarViewModel.yearsList;
             
-            if (this.invertSortOrder)
+            if (this.settings.invertSortOrder)
             {
                 yearslist = yearslist.reverse();
             }
@@ -353,7 +374,7 @@ module powerbi.visuals {
                 .append("g")
                 .attr("transform", "translate(" + (20 + (this.width - this.cellSize * 52) / 2) + "," + (20 + this.height - this.cellSize * 7 - 1) + ")");
 
-            if (this.drawLabels) {
+            if (this.settings.drawLabels) {
                 var textGroup = svg.append("g").attr("fill", "#cccccc");
                 textGroup.append("text")
                     .attr("transform", "translate(" + this.cellSize * -1.5 + "," + this.cellSize * 3.5 + ")rotate(-90)")
@@ -442,7 +463,7 @@ module powerbi.visuals {
 
             this.renderTooltip(this.rect);
             
-            if (this.drawMonthPath)
+            if (this.settings.drawMonthPath)
             {
                 svg.selectAll(".month")
                     .data(function (d) { return d3.time.months(new Date(d, 0, 1), new Date(d + 1, 0, 1)); })
@@ -452,7 +473,7 @@ module powerbi.visuals {
                     .attr("stroke", "#bbbbbb");
             }
 
-            if (this.drawLegend) {
+            if (this.settings.drawLegend) {
                 var legendGroup = d3.select(this.element).insert("svg", ":first-child")
                     .attr("width", itemWidth)
                     .attr("height", itemWidth / 17.5)
@@ -540,16 +561,22 @@ module powerbi.visuals {
             
             if (objects && objects.general) {
                 if (objects.general.drawMonthPath !== null) {
-                    this.drawMonthPath = objects.general.drawMonthPath;                
+                    this.settings.drawMonthPath = objects.general.drawMonthPath;                
                 }
                 if (objects.general.drawLabels !== null) {
-                    this.drawLabels = objects.general.drawLabels;                
+                    this.settings.drawLabels = objects.general.drawLabels;                
                 }
                 if (objects.general.drawLegend !== null) {
-                    this.drawLegend = objects.general.drawLegend;                
+                    this.settings.drawLegend = objects.general.drawLegend;                
                 }
                 if (objects.general.invertSortOrder !== null) {
-                    this.invertSortOrder = objects.general.invertSortOrder;                
+                    this.settings.invertSortOrder = objects.general.invertSortOrder;                
+                }
+                if (objects.general.shouldSelectLastValue !== null) {
+                    this.settings.shouldSelectLastValue = objects.general.shouldSelectLastValue;                
+                }
+                if (objects.general.relativeSize !== null) {
+                    this.settings.relativeSize = objects.general.relativeSize;                
                 }
             }          
             
@@ -697,7 +724,7 @@ module powerbi.visuals {
         private getDaysOfYear = (year: number) => { return d3.time.days(new Date(year, 0, 1), new Date(year + 1, 0, 1)); };
         public getXPosition = (date: DateValue) => { 
             var position = (d3.time.weekOfYear(date.date) * this.cellSize); 
-            if (!this.relativeSize || date.value === null)
+            if (!this.settings.relativeSize || date.value === null)
                 return position;
                 
             var offset = date.value / date.domainMax;
@@ -706,7 +733,7 @@ module powerbi.visuals {
             };
         public getYPosition = (date: DateValue) => {
              var position =  (date.date.getDay() * this.cellSize); 
-            if (!this.relativeSize || date.value === null)
+            if (!this.settings.relativeSize || date.value === null)
                 return position;
                 
              var offset = date.value / date.domainMax;
@@ -714,7 +741,7 @@ module powerbi.visuals {
             return position + ((this.cellSize-(offset*this.cellSize))/2);
              };
         public getSize = (date:DateValue) => {
-            if (!this.relativeSize || date.value === null)
+            if (!this.settings.relativeSize || date.value === null)
             {
                 return this.cellSize;
             }
