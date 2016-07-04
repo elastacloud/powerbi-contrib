@@ -57,7 +57,7 @@ module powerbi.visuals {
         private _timeFormat = d3.time.format('%Y-%m-%dT%X');
         private _monthDayFormat = d3.time.format('%m.%d');
 
-        private _colorScale:any; //D3.scale.Quantize<number>;
+        private _colorScale:D3.scale.Quantize<any>; //D3.scale.Quantize<number>;
 
         //Axis and scales
         private _xScale:D3.scale.Ordinal<string, {}>;
@@ -83,7 +83,7 @@ module powerbi.visuals {
 
             //Scales
             this._colorScale = d3.scale.quantize()
-                .domain(( [0, 500]))
+                .domain([0, 500])
                 .range(['#f6faaa', '#FEE08B', '#FDAE61', '#F46D43', '#D53E4F', '#9E0142']);
 
             this._axisHeight = (this._itemSize + this._cellPadding) * 24; //24 = hours
@@ -120,7 +120,7 @@ module powerbi.visuals {
             return groupedByDate;
         }
 
-        update(dataIn:Array<any>) {
+        update(dataIn:Array<IDataItem>) {
 
             var data = this.convert(dataIn);
 

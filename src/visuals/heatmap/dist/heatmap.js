@@ -54,7 +54,7 @@ var powerbi;
                     .attr('height', this._height);
                 //Scales
                 this._colorScale = d3.scale.quantize()
-                    .domain(([0, 500]))
+                    .domain([0, 500])
                     .range(['#f6faaa', '#FEE08B', '#FDAE61', '#F46D43', '#D53E4F', '#9E0142']);
                 this._axisHeight = (this._itemSize + this._cellPadding) * 24; //24 = hours
                 this._xScale = d3.scale.ordinal();
@@ -136,6 +136,7 @@ var powerbi;
                     .append('text')
                     .text('time')
                     .attr('transform', 'translate(-10,' + this._axisHeight + ') rotate(-90)');
+                return data;
             };
             return Heatmap;
         }());
