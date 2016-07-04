@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="dist/style.css">
+</head>
+<body>
+
+<div class="days-hours-heatmap">
+    <!-- heatmap -->
+    <svg role="heatmap" class="heatmap"></svg>
+</div>
+
+<script src="node_modules/d3/d3.js"></script>
+<script src="dist/heatmap.js"></script>
+<script>
+    var heatmap = new powerbi.visuals.Heatmap('.heatmap');
+    //    setTimeout(function(){
+    //        heatmap.getData()
+    //    }, 2000);
+
+    d3.json('src/pm25.json', function (err, data) {
+
+        if (err) {
+            console.log(err);
+            return;
+        }
+        if (data) {
+            heatmap.update(data.data);
+        }
+    });
+</script>
+</body>
+</html>
