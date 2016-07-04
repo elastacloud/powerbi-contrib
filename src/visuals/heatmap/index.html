@@ -16,10 +16,6 @@
 <script src="dist/heatmap.js"></script>
 <script>
     var heatmap = new powerbi.visuals.Heatmap('.heatmap');
-    //    setTimeout(function(){
-    //        heatmap.getData()
-    //    }, 2000);
-
     d3.json('src/pm25.json', function (err, data) {
 
         if (err) {

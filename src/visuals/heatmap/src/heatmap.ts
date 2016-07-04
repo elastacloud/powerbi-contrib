@@ -185,7 +185,11 @@ module powerbi.visuals {
                 .append('text')
                 .text('time')
                 .attr('transform', 'translate(-10,' + this._axisHeight + ') rotate(-90)');
+
+
+            return data;
         }
+
 
     }
 }
