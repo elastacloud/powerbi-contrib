@@ -85,7 +85,7 @@ var CreateViz = (function(){
     function createPackageJson(files){
         var guid = visualName + Math.floor(Math.random()*461324395950);
         var settings = {
-            "build": "1.0.0",
+            "build": "13.0.1100.517",
             "version": "1.0.0",
             "author": {
                 "name": "Andy Cross",
