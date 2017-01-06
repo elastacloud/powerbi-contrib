@@ -1,0 +1,179 @@
+{
+    "dataRoles": [
+        {
+            "name": "Category",
+            "displayName": "Category",
+            "kind": VisualDataRoleKind.Grouping
+        },
+        {
+            "name": 'Y',
+            "displayName": 'Y',
+            "kind": VisualDataRoleKind.Measure,
+        }
+    ],
+    dataViewMappings: [
+        {
+            conditions: [
+                // NOTE: Ordering of the roles prefers to add measures to Y before Gradient.
+                {
+                    'Category': {
+                        max: 1
+                    },
+                    'Y': {
+                        max: 1
+                    }
+                },
+            ],
+            categorical: {
+                categories: {
+                    for: {
+                        in: 'Category'
+                    },
+                },
+                values: {
+                    group: {
+                        by: 'Series',
+                        select: [
+                            {
+                                bind: {
+                                    to: 'Y'
+                                }
+                            }
+                        ],
+                        dataReductionAlgorithm: {
+                            top: {}
+                        }
+                    }
+                },
+                rowCount: {
+                    preferred: {
+                        max: 2
+                    }
+                }
+            },
+        }
+    ],
+    objects: {
+        cellColor: {
+            displayName: 'Cellscolor',
+            properties: {
+                fill: {
+                    displayName: 'Cellfill',
+                    type: {
+                        fill: {
+                            solid: {
+                                color: true
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        general: {
+            displayName: data.createDisplayNameGetter('Visual_General'),
+            properties: {
+                drawMonthPath: {
+                    displayName: "Draw Month Path?",
+                    type: {
+                        bool: true
+                    }
+                },
+                drawLegend: {
+                    displayName: "Draw Legend?",
+                    type: {
+                        bool: true
+                    }
+                },
+                drawLabels: {
+                    displayName: "Draw Labels?",
+                    type: {
+                        bool: true
+                    }
+                },
+                invertSortOrder: {
+                    displayName: "Ascending?",
+                    type: {
+                        bool: true
+                    }
+                },
+                relativeSize: {
+                    displayName: "Relative?",
+                    type: {
+                        bool: true
+                    }
+                },
+                shouldSelectLastValue: {
+                    displayName: "Hello?",
+                    type: {
+                        bool: true
+                    }
+                },
+            },
+        },
+        dataPoint: {
+            displayName: data.createDisplayNameGetter('Visual_DataPoint'),
+            properties: {
+                defaultColor: {
+                    displayName: data.createDisplayNameGetter('Visual_DefaultColor'),
+                    type: {
+                        fill: {
+                            solid: {
+                                color: true
+                            }
+                        }
+                    }
+                },
+                fill: {
+                    displayName: data.createDisplayNameGetter('Visual_Fill'),
+                    type: {
+                        fill: {
+                            solid: {
+                                color: true
+                            }
+                        }
+                    }
+                },
+                // fillRule: {
+                //     displayName: data.createDisplayNameGetter('Visual_Gradient'),
+                //     type: { fillRule: {} },
+                //     rule: {
+                //         inputRole: 'Y',
+                //         output: {
+                //             property: 'fill',
+                //             selector: ['Category'],
+                //         },
+                //     },
+                // }
+            }
+        },
+        labels: {
+            displayName: data.createDisplayNameGetter('Visual_DataPointsLabels'),
+            properties: {
+                show: {
+                    displayName: data.createDisplayNameGetter('Visual_Show'),
+                    type: {
+                        bool: true
+                    },
+                },
+                color: {
+                    displayName: data.createDisplayNameGetter('Visual_LabelsFill'),
+                    type: {
+                        fill: {
+                            solid: {
+                                color: true
+                            }
+                        }
+                    }
+                },
+                labelDisplayUnits: {
+                    displayName: data.createDisplayNameGetter('Visual_DisplayUnits'),
+                    type: {
+                        formatting: {
+                            labelDisplayUnits: true
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

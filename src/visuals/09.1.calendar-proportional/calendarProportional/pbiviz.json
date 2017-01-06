@@ -1,0 +1,23 @@
+{
+  "visual": {
+    "name": "calendarProportional",
+    "displayName": "CalendarProportional",
+    "guid": "PBI_CV_6EAF630D_B021_44D0_A8A3_216BE33677C2",
+    "visualClassName": "Visual",
+    "version": "1.0.0",
+    "description": "",
+    "supportUrl": "",
+    "gitHubUrl": ""
+  },
+  "apiVersion": "1.1.0",
+  "author": {
+    "name": "",
+    "email": ""
+  },
+  "assets": {
+    "icon": "assets/icon.png"
+  },
+  "externalJS": [],
+  "style": "style/visual.less",
+  "capabilities": "capabilities.json"
+}

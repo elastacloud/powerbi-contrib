@@ -1,0 +1,130 @@
+{
+    "dataRoles": [
+        {
+            "displayName": "Category Data",
+            "name": "category",
+            "kind": "Grouping"
+        },
+        {
+            "displayName": "Measure Data",
+            "name": "measure",
+            "kind": "Measure"
+        }
+    ],
+    "dataViewMappings": [
+        {
+            "categorical": {
+                "categories": {
+                    "for": {
+                        "in": "category"
+                    },
+                    "dataReductionAlgorithm": {
+                        "top": {}
+                    }
+                },
+                "values": {
+                    "select": [
+                        {
+                            "bind": {
+                                "to": "measure"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "objects": {
+        "cellColor": {
+            "displayName": "Data Colors",
+            "properties": {
+                "maxColor": {
+                    "displayName": "Max Color",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "minColor": {
+                    "displayName": "Min Color",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "layoutColor": {
+            "displayName": "Layout Colors",
+            "properties": {
+                "gridStroke": {
+                    "displayName": "Grid Stroke",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "backgroundFill": {
+                    "displayName": "Background Color",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "general": {
+            "displayName": "General",
+            "properties": {
+                "drawMonthPath": {
+                    "displayName": "Draw Month Path?",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "drawLegend": {
+                    "displayName": "Draw Legend?",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "drawLabels": {
+                    "displayName": "Draw Labels?",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "invertSortOrder": {
+                    "displayName": "Ascending?",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "relativeSize": {
+                    "displayName": "Relative?",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "shouldSelectLastValue": {
+                    "displayName": "Hello?",
+                    "type": {
+                        "bool": true
+                    }
+                }
+            }
+        }
+    }
+}
