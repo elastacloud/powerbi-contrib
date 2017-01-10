@@ -1,6 +1,6 @@
 /*
  *  Power BI Visualizations
- *  Calendar. V1.5.1
+ *  Calendar. V1.6.1
  *
  *  Copyright (c) Elastcloud Ltd
  *  All rights reserved. 
@@ -47,7 +47,6 @@ module powerbi.extensibility.visual {
         domainMax: number;
         selector: ISelectionId;
         dateStr: string;
-        //getKey():string;
         tooltipInfo?: TooltipShowOptions;
     };
     class DateValue implements IDateValue{
@@ -57,9 +56,6 @@ module powerbi.extensibility.visual {
         domainMax: number;
         selector: ISelectionId;
         dateStr: string;
-        /*getKey = () => {
-            return "1";
-        }*/
         tooltipInfo: TooltipShowOptions;
     }
     export interface CalendarViewModel {
@@ -125,8 +121,7 @@ module powerbi.extensibility.visual {
             this.selectionIdBuilder = options.host.createSelectionIdBuilder();
             this.tooltipServiceWrapper = createTooltipServiceWrapper(options.host.tooltipService, options.element);
 
-            this.settings = {
-                shouldSelectLastValue: true,
+            this.settings = <CalendarSettings>{
                 drawMonthPath: false,
                 drawLegend: false,
                 drawLabels: true,
@@ -143,7 +138,10 @@ module powerbi.extensibility.visual {
             d3.select(this.element).selectAll("*").remove();
             var viewModel = this.convert(options.dataViews[0], this.colorPalette);
 
-            if (viewModel == null) return;
+            if (viewModel == null || viewModel.values.length == 0) {
+                this.drawNoData();
+                return;
+            }
             var dataView = options.dataViews[0];
             if (dataView.metadata && dataView.metadata.objects) {
                     var defaultColor = this.colorPalette.getColor("1").value;
@@ -183,7 +181,11 @@ module powerbi.extensibility.visual {
 
               }
             }
-        }        
+        } 
+        private drawNoData()
+        {
+            this.element.innerHTML = "<p>There was no data for this combination of inputs</p>";
+        }       
         private createChangeForFilterProperty(selectedId, filterPropertyIdentifier: DataViewObjectPropertyIdentifier): VisualObjectInstancesToPersist {
             return null;
             
@@ -379,6 +381,7 @@ module powerbi.extensibility.visual {
                     .attr("x", this.getXPositionWithOffset)
                     .attr("y", this.getYPositionWithOffset)
                     .on("mousedown", (d) => {
+                        debugger;
                         this.selectedKey = d.selector;
                         if (d.selector) {
                             this.selectionManager.select(d.selector);
@@ -416,11 +419,19 @@ module powerbi.extensibility.visual {
                     .attr("x", this.getXPosition)
                     .attr("y", this.getYPosition)
                     .on("mousedown", (d) => {
-                        this.selectedKey = d.selector;
-                        if (d.selector) {
-                            this.selectionManager.select(d.selector);
-                        } else {
+                        debugger;
+                        if (this.selectedKey == d.selector) {
+                            //toggle
                             this.selectionManager.clear();
+                            this.selectedKey = null;//to enable reselection
+                        }
+                        else {
+                            this.selectedKey = d.selector;
+                            if (d.selector) {
+                                this.selectionManager.select(d.selector);
+                            } else {
+                                this.selectionManager.clear();
+                            }
                         }
                         //todo:selection change
                         //this.hostService.persistProperties(this.createChangeForFilterProperty(d.selector, slicerProps.filterPropertyIdentifier));
@@ -430,14 +441,14 @@ module powerbi.extensibility.visual {
                             this.prevSelection.attr("style", oldStyle);
                         }
 
-                        /*var rect = d3.select(d3.event.target);
+                        var rect = d3.select(event.target);
                         if (d.selector) {
                             var oldFill = rect.attr("style");
-                            rect.attr("style", "stroke:#000000;stroke-width: 1px;" + oldFill);
+                            rect.attr("style", "stroke:#ff0000;stroke-width: 3px;fill:#ff0000;");
                             rect.attr("oldStyle", oldFill);
                         }
                         this.prevSelection = rect;
-                        event.stopPropagation();*/
+                        event.stopPropagation();
                     });
             }
 
@@ -467,13 +478,13 @@ module powerbi.extensibility.visual {
                     .attr("width", this.cellSize)
                     .attr("height", this.cellSize)
                     .attr("x", 0).attr("y", 0)
-                    .attr("fill", "#000000");
+                    .attr("fill", this.settings.cellsColorBottom);
 
                 legendGroup.append("rect")
                     .attr("width", this.cellSize)
                     .attr("height", this.cellSize)
                     .attr("x", 0).attr("y", this.cellSize * 1.5)
-                    .attr("fill", this.defaultDataPointColorTop);
+                    .attr("fill", this.settings.cellsColorTop);
 
                 legendGroup
                     .append("text").text(0)
@@ -579,36 +590,48 @@ module powerbi.extensibility.visual {
                 var minValue = 0;
                 var maxValue = 0;
                 var returnSet = [];
+
+                debugger;
             if (this.isCategorical(dataView)) {
-                returnSet = dataView.categorical.categories[0].values.map(
-                    (v:Date, i) => {
-                      if (dataView.categorical.values) {
-                        var retVal = <DateValue> {
-                            date: v,
-                            color:  '',
-                            value: dataView.categorical.values.map((val) => { return val.values[i]; })
-                                .reduce((prev:number, curr:number) => { return prev + curr; }),
-                            selector: this.selectionIdBuilder
-                                .withCategory(dataView.categorical.categories[0], i)
-                                .withMeasure(dataView.categorical.values[0].source.queryName)
-                                .createSelectionId(),
-                            dateStr: v.getFullYear() + "-" + CalendarVisual.pad(v.getMonth()+1) +
-                            "-" + CalendarVisual.pad(v.getDate())
+
+                if (dataView.categorical.categories[0].values) {
+                    returnSet = dataView.categorical.categories[0].values.map(
+                        (v:Date, i) => {
+                            if (v != null)  {
+                              
+                        if (dataView.categorical.values) {
+                            var retVal = <DateValue> {
+                                date: v,
+                                color:  '',
+                                value: dataView.categorical.values.map((val) => { return val.values[i]; })
+                                    .reduce((prev:number, curr:number) => { return prev + curr; }),
+                                selector: this.selectionIdBuilder
+                                    .withCategory(dataView.categorical.categories[0], i)
+                                    .withMeasure(dataView.categorical.values[0].source.queryName)
+                                    .createSelectionId(),
+                                dateStr: v.getFullYear() + "-" + CalendarVisual.pad(v.getMonth()+1) +
+                                "-" + CalendarVisual.pad(v.getDate())
+                            }
+    //                        retVal.color = this.getDataPointColor(retVal.value);
+                            if(i == 0 || minValue > retVal.value)
+                            minValue = retVal.value;
+                            
+                            if(i == 0 || maxValue < retVal.value)
+                            maxValue = retVal.value;
+                            return retVal;
                         }
-//                        retVal.color = this.getDataPointColor(retVal.value);
-                        if(i == 0 || minValue > retVal.value)
-                        minValue = retVal.value;
-                        
-                        if(i == 0 || maxValue < retVal.value)
-                        maxValue = retVal.value;
-                        return retVal;
-                    }
-                    else return null;
-                }, this);
-                returnSet = returnSet.map((d)=>{
-                    d.domainMax = maxValue;
-                    return d;                    
-                });
+                            }
+                    }, this);
+                    returnSet = returnSet.filter((d)=>{
+                        return d!=null;
+                    }).map((d)=>{
+                        d.domainMax = maxValue;
+                        return d;                    
+                    });
+                }
+                else {
+                    returnSet = [];
+                }
             } else if (this.isTable(dataView))
             {
                 var dateColumns = dataView.table.columns.map((v, i) => {
