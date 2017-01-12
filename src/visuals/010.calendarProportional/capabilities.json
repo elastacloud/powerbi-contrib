@@ -57,6 +57,16 @@
                             }
                         }
                     }
+                },
+                "selectColor": {
+                    "displayName": "Select Color",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
                 }
             }
         },

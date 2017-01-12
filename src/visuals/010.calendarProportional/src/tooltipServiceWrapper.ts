@@ -19,8 +19,8 @@ module powerbi.extensibility.visual {
 
     const DefaultHandleTouchDelay = 1000;
 
-    export function createTooltipServiceWrapper(tooltipService: ITooltipService, rootElement: Element, handleTouchDelay: number = DefaultHandleTouchDelay): ITooltipServiceWrapper {
-        return new TooltipServiceWrapper(tooltipService, rootElement, handleTouchDelay);
+    export function createTooltipServiceWrapper(tooltipService: ITooltipService, rootElement: Element, positionCellSize: number, handleTouchDelay: number = DefaultHandleTouchDelay): ITooltipServiceWrapper {
+        return new TooltipServiceWrapper(tooltipService, rootElement, handleTouchDelay, positionCellSize);
     }
     
     class TooltipServiceWrapper implements ITooltipServiceWrapper {
@@ -28,14 +28,16 @@ module powerbi.extensibility.visual {
         private visualHostTooltipService: ITooltipService;
         private rootElement: Element;
         private handleTouchDelay: number;
+        private cellSize: number;
         
-        constructor(tooltipService: ITooltipService, rootElement: Element, handleTouchDelay: number) {
+        constructor(tooltipService: ITooltipService, rootElement: Element, handleTouchDelay: number, positionCellSize: number) {
             this.visualHostTooltipService = tooltipService;
             this.handleTouchDelay = handleTouchDelay;
             this.rootElement = rootElement;
+            this.cellSize = positionCellSize;
         }
         
-        public addTooltip<T>(
+        public addTooltip<T extends IDateValue>(
             selection: d3.Selection<Element>,
             getTooltipInfoDelegate: (args: TooltipEventArgs<T>) => VisualTooltipDataItem[],
             getDataPointIdentity: (args: TooltipEventArgs<T>) => ISelectionId,
@@ -152,9 +154,17 @@ module powerbi.extensibility.visual {
             this.visualHostTooltipService.hide({ immediately: true, isTouchEvent: false });
         }
 
-        private makeTooltipEventArgs<T>(rootNode: Element, isPointerEvent: boolean, isTouchEvent: boolean): TooltipEventArgs<T> {
+        private makeTooltipEventArgs<T extends IDateValue>(rootNode: Element, isPointerEvent: boolean, isTouchEvent: boolean): TooltipEventArgs<T> {
             let target = <HTMLElement>(<Event>d3.event).target;
             let data: T = d3.select(target).datum();
+
+            let getXPosition = (date: T, target: HTMLElement) => { 
+                return ((d3.time.weekOfYear(date.date)-1) * this.cellSize) + target.clientLeft; 
+            };
+            let getYPosition = (date: T, target: HTMLElement) => {
+                debugger;
+             return  (date.date.getDay() * this.cellSize)+this.cellSize + target['nearestViewportElement'].clientTop; 
+             };
 
             let mouseCoordinates = this.getCoordinates(rootNode, isPointerEvent);
             let elementCoordinates: number[] = this.getCoordinates(target, isPointerEvent);
@@ -197,7 +207,7 @@ module powerbi.extensibility.visual {
                 let e = <any>d3.event, s;
                 while (s = e.sourceEvent) e = s;
                 let rect = rootNode.getBoundingClientRect();
-                coordinates = [e.clientX - rect.left - rootNode.clientLeft, e.clientY - rect.top - rootNode.clientTop];
+                coordinates = [((e.clientX - rect.left - rootNode.clientLeft)*0.75)-25, (e.clientY - rect.top - rootNode.clientTop)*0.75];
             }
             else {
                 let touchCoordinates = d3.touches(rootNode);
