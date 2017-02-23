@@ -319,7 +319,7 @@ module powerbi.extensibility.visual {
                 .attr("width", itemWidth)
                 .attr("height", itemHeight/yearslist.length)
                 .attr("class", "yearGrid")
-                .attr("viewBox", "0 0 54 9")
+                .attr("viewBox", "0 0 56 9")
                 .attr("preserveAspectRatio", "xMinYMin meet")
                 .append("g")
                 .attr("transform", "translate(" + (20 + (this.width - this.cellSize * 52) / 2) + "," + (20 + this.height - this.cellSize * 7 - 1) + ")");
