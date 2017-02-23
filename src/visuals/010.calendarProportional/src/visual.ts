@@ -327,32 +327,39 @@ module powerbi.extensibility.visual {
                 .attr("transform", "translate(" + (20 + (this.width - this.cellSize * 52) / 2) + "," + (20 + this.height - this.cellSize * 7 - 1) + ")");
 
             if (this.settings.drawLabels) {
-                var textGroup = svg.append("g").attr("fill", "#cccccc");
+                var textGroup = svg.append("g").attr("fill", "#cccccc")
+                    .attr("class", "labels");//;.attr("transform", "");
                 textGroup.append("text")
-                    .attr("transform", "translate(" + this.cellSize * -1.5 + "," + this.cellSize * 3.5 + ")rotate(-90)")
+                    .attr("transform", "translate(0.25 4) scale(0.8) rotate(-90)")
                     .style("text-anchor", "middle")
+                    .style("font-size", "1px")
+                    .attr("x", "0")
+                    .attr("y", "1")
                     .text(function (d) { return d; });
 
                 textGroup.append("text")
                     .style("text-anchor", "middle")
                     .text("M")
-                    .attr("transform", "translate(" + this.cellSize * -0.75 + ")")
-                    .attr("x", 0)
-                    .attr("y", 2 * this.cellSize);
+                    .attr("transform", "translate(0.8 2) scale(0.8)")
+                    .attr("x", 1)
+                    .attr("y", this.cellSize)                    
+                    .style("font-size", "1px");
 
                 textGroup.append("text")
                     .style("text-anchor", "middle")
                     .text("W")
-                    .attr("transform", "translate(" + this.cellSize * -0.75 + ")")
-                    .attr("x", 0)
-                    .attr("y", 4 * this.cellSize);
+                    .attr("transform", "translate(0.8 4) scale(0.8)")
+                    .attr("x", 1)
+                    .attr("y", this.cellSize)
+                    .style("font-size", "1px");
 
                 textGroup.append("text")
                     .style("text-anchor", "middle")
                     .text("F")
-                    .attr("transform", "translate(" + this.cellSize * -0.75 + ")")
-                    .attr("x", 0)
-                    .attr("y", 6 * this.cellSize);
+                    .attr("transform", "translate(0.8 6) scale(0.8)")
+                    .attr("x", 1)
+                    .attr("y", this.cellSize)
+                    .style("font-size", "1px");
 
                 textGroup.append("text")
                     .attr("transform", "translate(" + (this.width - (3 * this.cellSize)) + "," + this.cellSize * 3.5 + ")rotate(90)")
@@ -360,11 +367,13 @@ module powerbi.extensibility.visual {
                     .text(function (d) { return d; });
 
                 textGroup.selectAll(".month")
+                    .append("g")
                     .data((d) => { return d3.time.months(new Date(d, 0, 1), new Date(d + 1, 0, 1)); })
                     .enter()
                     .append("text")
-                    .attr("transform",(d) => { return "translate(" + d3.time.weekOfYear(d) * this.cellSize + ", -5)"; })
-                    .text((d) => { return d3.time.format("%b")(d); });
+                    .attr("transform",(d) => { return "translate(" + ((d3.time.weekOfYear(d) * this.cellSize)+2) + ", 0.75) scale(0.75)"; })
+                    .text((d) => { return d3.time.format("%b")(d); })
+                    .style("font-size", "1px");
             }
             var pad = (n: any) => {
                 if (n.toString().length === 1) {
@@ -374,10 +383,13 @@ module powerbi.extensibility.visual {
                 return n.toString();
             };
 
-             var rectEnter  = svg.selectAll(".day")
-                .data((d, i) => {
-                return calendarViewModel.values[d]
-            })
+             var rectEnter  = svg
+                .append("g").attr("class", "days")
+                .attr("transform", "translate(1.2)")
+                .selectAll(".day")
+                    .data((d, i) => {
+                    return calendarViewModel.values[d]
+                })
                 .enter();
             var rect: d3.Selection<any>;
             if (this.settings.relativeSize) {
