@@ -52,7 +52,7 @@ module powerbi.extensibility.visual {
     export class DateValue implements IDateValue{
         color:string;
         date: Date;
-        value: number;
+        value: any;
         domainMax: number;
         selector: ISelectionId;
         dateStr: string;
@@ -96,7 +96,6 @@ module powerbi.extensibility.visual {
         private element: HTMLElement;
         //private rect: d3.Selection<any>;
         private selectionManager: ISelectionManager;
-        private selectionIdBuilder: ISelectionIdBuilder;
         private maxDomain: number;
         private colorPalette: IColorPalette;
         private hostService: IVisualHost;
@@ -119,7 +118,6 @@ module powerbi.extensibility.visual {
             this.hostService = options.host;
             this.defaultDataPointColorTop = this.colorPalette.getColor("1").value;
             this.defaultDataPointColorBottom = this.colorPalette.getColor("2").value;
-            this.selectionIdBuilder = options.host.createSelectionIdBuilder();
             this.tooltipServiceWrapper = createTooltipServiceWrapper(options.host.tooltipService, options.element, this.cellSize);
 
             this.settings = <CalendarSettings>{
@@ -191,7 +189,7 @@ module powerbi.extensibility.visual {
                     {
                         var lastYear = viewModel.values[viewModel.yearsList[viewModel.yearsList.length-1]];
                         var selector = 
-                                    this.selectionIdBuilder
+                                    this.hostService.createSelectionIdBuilder()
                                         .withCategory(dataView.categorical.categories[0], lastYear.length-1)
                                         .withMeasure(dataView.categorical.values[0].source.queryName)
                                         .createSelectionId();
@@ -433,14 +431,14 @@ module powerbi.extensibility.visual {
                             this.prevSelection.attr("style", oldStyle);
                         }
 
-                        /*var rect = d3.select(d3.event.target);
+                        //debugger;
                         if (d.selector) {
                             var oldFill = rect.attr("style");
-                            rect.attr("style", "stroke:#000000;stroke-width: 1px;" + oldFill);
+                            rect.attr("style", "stroke:#000000;stroke-width: 0.1px;" + oldFill);
                             rect.attr("oldStyle", oldFill);
                         }
                         this.prevSelection = rect;
-                        event.stopPropagation();*/
+                        event.stopPropagation();
                     });
             }
             else {
@@ -484,7 +482,7 @@ module powerbi.extensibility.visual {
                             var rect = d3.select(event.target);
                             if (d.selector) {
                                 var oldFill = rect.attr("style");
-                                rect.attr("style", "fill:"+this.settings.selectColor);
+                                rect.attr("style", "fill:"+this.settings.selectColor+";stroke-width:0.1px");
                                 rect.attr("oldStyle", oldFill);
                             }
                             this.prevSelection = rect;
@@ -502,6 +500,7 @@ module powerbi.extensibility.visual {
                 svg.selectAll(".month")
                     .data(function (d) { return d3.time.months(new Date(d, 0, 1), new Date(d + 1, 0, 1)); })
                     .enter().append("path")
+                    .attr("transform", "translate(2.15, 1.05)")
                     .attr("class", "month")
                     .attr("d", this.monthPath)
                     .attr("stroke", "#bbbbbb");
@@ -648,9 +647,12 @@ module powerbi.extensibility.visual {
                                             var retVal = <DateValue> {
                                                 date: v,
                                                 color:  '',
+                                                domainMax: 0,
+                                                dateStr: "",
+                                                tooltipInfo: null,
                                                 value: dataView.categorical.values.map((val) => { return val.values[i]; })
                                                     .reduce((prev:number, curr:number) => { return prev + curr; }),
-                                                selector: this.selectionIdBuilder
+                                                selector: this.hostService.createSelectionIdBuilder()
                                                     .withCategory(dataView.categorical.categories[0], i)
                                                     .withMeasure(dataView.categorical.values[0].source.queryName)
                                                     .createSelectionId()

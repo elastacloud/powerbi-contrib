@@ -127,12 +127,6 @@
                     "type": {
                         "bool": true
                     }
-                },
-                "shouldSelectLastValue": {
-                    "displayName": "Hello?",
-                    "type": {
-                        "bool": true
-                    }
                 }
             }
         }
