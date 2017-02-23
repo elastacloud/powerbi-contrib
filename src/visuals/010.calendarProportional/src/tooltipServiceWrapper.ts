@@ -207,7 +207,10 @@ module powerbi.extensibility.visual {
                 let e = <any>d3.event, s;
                 while (s = e.sourceEvent) e = s;
                 let rect = rootNode.getBoundingClientRect();
-                coordinates = [((e.clientX - rect.left - rootNode.clientLeft)*0.75)-25, (e.clientY - rect.top - rootNode.clientTop)*0.75];
+                //debugger;
+                var tB = e.target.getBoundingClientRect();
+                coordinates = [tB.left, tB.top];
+                //coordinates = [((e.clientX - rect.left - rootNode.clientLeft)*0.75)-25, (e.clientY - rect.top - rootNode.clientTop)*0.75];
             }
             else {
                 let touchCoordinates = d3.touches(rootNode);

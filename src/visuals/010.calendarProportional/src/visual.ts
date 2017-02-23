@@ -1,6 +1,6 @@
 /*
  *  Power BI Visualizations
- *  Calendar. V1.7.1
+ *  Calendar. V1.8.1
  *
  *  Copyright (c) Elastcloud Ltd
  *  All rights reserved. 
@@ -92,7 +92,7 @@ module powerbi.extensibility.visual {
         private settings:CalendarSettings;
         private width = 1016;
         private height = 144;
-        private cellSize = 18; // cell size
+        private cellSize = 1; // cell size
         private element: HTMLElement;
         //private rect: d3.Selection<any>;
         private selectionManager: ISelectionManager;
@@ -130,7 +130,7 @@ module powerbi.extensibility.visual {
                 relativeSize: false,
                 cellsColorTop: this.defaultDataPointColorTop,
                 cellsColorBottom: this.defaultDataPointColorBottom,
-                gridStroke: "#000",
+                gridStroke: "#b1b1b1",
                 backgroundFill: "#fff",
                 selectColor: "#f00"
             };
@@ -141,61 +141,67 @@ module powerbi.extensibility.visual {
         }
 
         public update(options: VisualUpdateOptions) {
+            this.width = options.viewport.width;
+            this.height = options.viewport.height;
             if (this.isResize(options)) {
-                this.width = options.viewport.width;
-                this.height = options.viewport.height;
+                this.buildSettings(options.dataViews[0]);    
+                var years = document.getElementsByClassName("yearGrid");
+                for(var i = 0; i< years.length; i++) {
+                    years.item(i).setAttribute("width", this.width.toString());
+                    years.item(i).setAttribute("height", this.height.toString());
+                } 
             }        
             else {   
                 this.updateImpl(options);
             }
         } 
         private updateImpl(options: VisualUpdateOptions) {                     
-                    d3.select(this.element).selectAll("*").remove();
-                    var viewModel = this.convert(options.dataViews[0], this.colorPalette);
+                d3.select(this.element).selectAll("*").remove();
+                var viewModel = this.convert(options.dataViews[0], this.colorPalette);
 
-                    if (viewModel == null || viewModel.values.length == 0) {
-                        this.drawNoData();
-                        return;
+                if (viewModel == null || viewModel.values.length == 0) {
+                    this.drawNoData();
+                    return;
+                }
+                var dataView = options.dataViews[0];
+                if (dataView.metadata && dataView.metadata.objects) {
+                        var defaultColor = this.colorPalette.getColor("1").value;
+                        if (defaultColor)
+                            this.defaultDataPointColorTop = defaultColor;
                     }
-                    var dataView = options.dataViews[0];
-                    if (dataView.metadata && dataView.metadata.objects) {
-                            var defaultColor = this.colorPalette.getColor("1").value;
-                            if (defaultColor)
-                                this.defaultDataPointColorTop = defaultColor;
-                        }
 
-                    this.maxDomain = viewModel.yearsList.map((year: number) => {
-                        return viewModel.values[year]
-                            .map(dv => { return dv.value ? dv.value : 0; })
-                            .reduce((p, c) => { if (c > p) { return c; } else { return p; } }, 0);
-                    }).reduce((p, c) => { if (c > p) { return c; } else { return p; } }, 0);
+                this.maxDomain = viewModel.yearsList.map((year: number) => {
+                    return viewModel.values[year]
+                        .map(dv => { return dv.value ? dv.value : 0; })
+                        .reduce((p, c) => { if (c > p) { return c; } else { return p; } }, 0);
+                }).reduce((p, c) => { if (c > p) { return c; } else { return p; } }, 0);
 
-                    var dataViews = options.dataViews;
-                    var currentViewport = options.viewport;
-                    var dataView:DataView = undefined;
-                    if (dataViews && dataViews.length > 0) {
-                        dataView = dataViews[0];
-                    }
-                    this.draw(dataView, this.element, options.viewport.width, options.viewport.height, viewModel, this.colorPalette);
-                    
-                    if (!this.isLoaded)
+                var dataViews = options.dataViews;
+                var currentViewport = options.viewport;
+                var dataView:DataView = undefined;
+                if (dataViews && dataViews.length > 0) {
+                    dataView = dataViews[0];
+                }
+                this.draw(dataView, this.element, options.viewport.width, options.viewport.height, viewModel, this.colorPalette);
+                
+                if (!this.isLoaded)
+                {
+                    this.isLoaded = true;   
+                    if (this.settings.shouldSelectLastValue)
                     {
-                        this.isLoaded = true;   
-                        if (this.settings.shouldSelectLastValue)
-                        {
-                            var lastYear = viewModel.values[viewModel.yearsList[viewModel.yearsList.length-1]];
-                            var selector = 
-                                        this.selectionIdBuilder
-                                            .withCategory(dataView.categorical.categories[0], lastYear.length-1)
-                                            .withMeasure(dataView.categorical.values[0].source.queryName)
-                                            .createSelectionId();
-                            
-                            this.selectionManager.select(selector);
-                            //note this is redacted
-                            //this.hostService.persistProperties(this.createChangeForFilterProperty(selector, slicerProps.filterPropertyIdentifier));
+                        var lastYear = viewModel.values[viewModel.yearsList[viewModel.yearsList.length-1]];
+                        var selector = 
+                                    this.selectionIdBuilder
+                                        .withCategory(dataView.categorical.categories[0], lastYear.length-1)
+                                        .withMeasure(dataView.categorical.values[0].source.queryName)
+                                        .createSelectionId();
+                        
+                        this.selectionManager.select(selector);
+                        //note this is redacted
+                        //this.hostService.persistProperties(this.createChangeForFilterProperty(selector, slicerProps.filterPropertyIdentifier));
 
-                        }
                     }
+                }
         }
         private drawNoData()
         {
@@ -311,7 +317,12 @@ module powerbi.extensibility.visual {
                 .data(yearslist)
                 .enter().append("svg");
 
-            svg.attr("viewBox", "-20 -20 " + (this.width - 20) + " " + (this.height + 4))
+            svg//.attr("viewBox", "-20 -20 " + (this.width - 20) + " " + (this.height + 4))
+                .attr("width", itemWidth)
+                .attr("height", itemHeight/yearslist.length)
+                .attr("class", "yearGrid")
+                .attr("viewBox", "0 0 54 9")
+                .attr("preserveAspectRatio", "xMinYMin meet")
                 .append("g")
                 .attr("transform", "translate(" + (20 + (this.width - this.cellSize * 52) / 2) + "," + (20 + this.height - this.cellSize * 7 - 1) + ")");
 
@@ -378,7 +389,7 @@ module powerbi.extensibility.visual {
                     .style({
                         "fill": this.settings.backgroundFill,
                         "stroke": this.settings.gridStroke,
-                        "stroke-width": '1px',
+                        "stroke-width": '0.05',
                     })
                     .attr("x", this.getXPosition)
                     .attr("y", this.getYPosition);
@@ -390,7 +401,7 @@ module powerbi.extensibility.visual {
                     .style({
                         "fill": (d) => d.color,
                         "stroke": (d) => d.selector && d.selector === this.selectedKey ? '#333' : this.settings.gridStroke,
-                        "stroke-width": '1px',
+                        "stroke-width": '0.05',
                     })
                     .attr("x", this.getXPositionWithOffset)
                     .attr("y", this.getYPositionWithOffset)
@@ -428,7 +439,7 @@ module powerbi.extensibility.visual {
                     .style({
                         "fill": (d) => d.color,
                         "stroke": (d) => d.selector && d.selector === this.selectedKey ? '#333' : this.settings.gridStroke,
-                        "stroke-width": '1px',
+                        "stroke-width": '0.05',
                     })
                     .attr("x", this.getXPosition)
                     .attr("y", this.getYPosition)
@@ -488,7 +499,7 @@ module powerbi.extensibility.visual {
                 var legendGroup = d3.select(this.element).insert("svg", ":first-child")
                     .attr("width", itemWidth)
                     .attr("height", itemWidth / 17.5)
-                    .attr("viewBox", "0 0 " + this.width + " " + this.height / 7)
+                    //.attr("viewBox", "0 0 " + this.width + " " + this.height / 7)
                     .attr("preserveAspectRatio", "xMinYMin")
                     .append("g");
 
@@ -765,10 +776,10 @@ module powerbi.extensibility.visual {
 
         private getDaysOfYear = (year: number) => { return d3.time.days(new Date(year, 0, 1), new Date(year + 1, 0, 1)); };
         public getXPosition = (date: DateValue) => { 
-            return (d3.time.weekOfYear(date.date) * this.cellSize); 
+            return (d3.time.weekOfYear(date.date) * this.cellSize) + 1; 
             };
         public getYPosition = (date: DateValue) => {
-             return  (date.date.getDay() * this.cellSize); 
+             return  (date.date.getDay() * this.cellSize) + 1; 
              };
         public getXPositionWithOffset = (date: DateValue) => { 
             if (!date.value || date.value === null)
