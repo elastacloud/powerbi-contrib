@@ -1,6 +1,6 @@
 /*
  *  Power BI Visualizations
- *  Calendar. V1.8.1
+ *  Calendar. V1.8.2
  *
  *  Copyright (c) Elastcloud Ltd
  *  All rights reserved. 
@@ -38,6 +38,7 @@
     }
 }*/
 
+import valueFormatter = powerbi.extensibility.utils.formatting.valueFormatter;
 module powerbi.extensibility.visual {
     //import SelectionManager = utility.SelectionManager;
     export interface IDateValue {
@@ -48,6 +49,7 @@ module powerbi.extensibility.visual {
         selector: ISelectionId;
         dateStr: string;
         tooltipInfo?: TooltipShowOptions;
+        format: string;
     };
     export class DateValue implements IDateValue{
         color:string;
@@ -57,6 +59,7 @@ module powerbi.extensibility.visual {
         selector: ISelectionId;
         dateStr: string;
         tooltipInfo: TooltipShowOptions;
+        format: string;
     }
     export interface CalendarViewModel {
         values: DateValue[][];
@@ -85,6 +88,7 @@ module powerbi.extensibility.visual {
         gridStroke:string;
         backgroundFill:string;
         selectColor:string;
+        labelFill:string;
     }
 
     export class CalendarVisual implements IVisual {
@@ -130,7 +134,8 @@ module powerbi.extensibility.visual {
                 cellsColorBottom: this.defaultDataPointColorBottom,
                 gridStroke: "#b1b1b1",
                 backgroundFill: "#fff",
-                selectColor: "#f00"
+                selectColor: "#f00", 
+                labelFill: "#ccc"
             };
         }
 
@@ -268,7 +273,8 @@ module powerbi.extensibility.visual {
                         selector: null,
                         properties: {
                             gridStroke: this.settings.gridStroke,
-                            backgroundFill: this.settings.backgroundFill
+                            backgroundFill: this.settings.backgroundFill,
+                            labelFill: this.settings.labelFill
                         }
                     };
                     instances.push(cellColor);
@@ -297,10 +303,20 @@ module powerbi.extensibility.visual {
         }
 
         private static getTooltipData(d: DateValue): any[] {
-            return [{
-                displayName: d.dateStr,
-                value: d.value < 0 ? "" : d.value.toString()
-            }];
+            if (d.format) {
+                let iValueFormatter = valueFormatter.create({ format: d.format });
+                return [{
+                    displayName: d.dateStr,
+                    value: d.value < 0 ? "" : iValueFormatter.format(d.value)
+                }];
+
+            }
+            else {
+                return [{
+                    displayName: d.dateStr,
+                    value: d.value < 0 ? "" : d.value.toString()
+                }];
+            }
         }
         private prevSelection: d3.Selection<HTMLElement>;
         private draw(dataView: DataView, element, itemWidth: number, itemHeight: number, calendarViewModel: CalendarViewModel, colors: IColorPalette) {
@@ -325,7 +341,7 @@ module powerbi.extensibility.visual {
                 .attr("transform", "translate(" + (20 + (this.width - this.cellSize * 52) / 2) + "," + (20 + this.height - this.cellSize * 7 - 1) + ")");
 
             if (this.settings.drawLabels) {
-                var textGroup = svg.append("g").attr("fill", "#cccccc")
+                var textGroup = svg.append("g").attr("fill", this.settings.labelFill)
                     .attr("class", "labels");//;.attr("transform", "");
                 textGroup.append("text")
                     .attr("transform", "translate(0.25 4) scale(0.8) rotate(-90)")
@@ -447,7 +463,15 @@ module powerbi.extensibility.visual {
                     .attr("height", this.cellSize)
                     .attr("class", "day")
                     .style({
-                        "fill": (d) => d.color,
+                        "fill": (d) => { 
+                            if (d.color) 
+                            { 
+                                return d.color; 
+                            } 
+                            else {
+                                return this.settings.backgroundFill;
+                            } 
+                        },
                         "stroke": (d) => d.selector && d.selector === this.selectedKey ? '#333' : this.settings.gridStroke,
                         "stroke-width": '0.05',
                     })
@@ -611,20 +635,28 @@ module powerbi.extensibility.visual {
                     this.settings.relativeSize = objects.general.relativeSize;                
                 }
             }     
-            if (dataView && dataView.metadata.objects) {
-                var cellColorObj = dataView.metadata.objects['cellColor'];
-                if (cellColorObj && cellColorObj['maxColor'] && cellColorObj['minColor'] && cellColorObj['selectColor']) {
-                    this.settings.cellsColorTop = cellColorObj['maxColor']['solid']['color'];
-                    this.settings.cellsColorBottom = cellColorObj['minColor']['solid']['color'];
-                    this.settings.selectColor = cellColorObj['selectColor']['solid']['color'];
-                }
-
-                var layoutColorObj = dataView.metadata.objects['layoutColor'];
-                if (layoutColorObj && layoutColorObj['gridStroke'] && layoutColorObj['backgroundFill']) {
-                    this.settings.gridStroke = layoutColorObj['gridStroke']['solid']['color'];
-                    this.settings.backgroundFill = layoutColorObj['backgroundFill']['solid']['color'];
+            if (dataView && dataView.metadata.objects) {                
+                this.settings.cellsColorTop = this.getSolidColorFromMetadata(dataView.metadata.objects, "cellColor", "maxColor", this.settings.cellsColorTop);
+                this.settings.cellsColorBottom = this.getSolidColorFromMetadata(dataView.metadata.objects, "cellColor", "minColor", this.settings.cellsColorBottom);
+                this.settings.selectColor = this.getSolidColorFromMetadata(dataView.metadata.objects, "cellColor", "selectColor", this.settings.selectColor)
+                this.settings.gridStroke =  this.getSolidColorFromMetadata(dataView.metadata.objects, "layoutColor", "gridStroke", this.settings.gridStroke);
+                this.settings.backgroundFill =  this.getSolidColorFromMetadata(dataView.metadata.objects, "layoutColor", "backgroundFill", this.settings.backgroundFill);
+                this.settings.labelFill =  this.getSolidColorFromMetadata(dataView.metadata.objects, "layoutColor", "labelFill", this.settings.labelFill);
+            }
+        }
+        private getSolidColorFromMetadata(objects: DataViewObjects, metaKey: string, key: string, defaultValue:string):string
+        {
+            if (objects)
+            {
+                if (objects[metaKey])
+                {
+                    if (objects[metaKey][key])
+                    {
+                        return objects[metaKey][key]['solid']['color'].toString();
+                    }
                 }
             }
+            return defaultValue;
         }
         private convert(dataView: DataView, colors: IColorPalette): CalendarViewModel {
             window.console.log("converting");
@@ -634,7 +666,7 @@ module powerbi.extensibility.visual {
                 var maxValue = 0;
                 var returnSet = [];
 
-                    //debugger;
+                debugger;
                 if (this.isCategorical(dataView)) {
 
                     if (dataView.categorical.categories[0].values) {
@@ -652,6 +684,7 @@ module powerbi.extensibility.visual {
                                                 tooltipInfo: null,
                                                 value: dataView.categorical.values.map((val) => { return val.values[i]; })
                                                     .reduce((prev:number, curr:number) => { return prev + curr; }),
+                                                format: dataView.metadata.columns[1].format,
                                                 selector: this.hostService.createSelectionIdBuilder()
                                                     .withCategory(dataView.categorical.categories[0], i)
                                                     .withMeasure(dataView.categorical.values[0].source.queryName)

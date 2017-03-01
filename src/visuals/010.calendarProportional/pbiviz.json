@@ -4,7 +4,7 @@
     "displayName": "CalendarProportional",
     "guid": "PBI_CV_146ADA04_62C6_4009_AEF0_A1E2370BF39C",
     "visualClassName": "CalendarVisual",
-    "version": "1.6.1",
+    "version": "1.8.2",
     "description": "",
     "supportUrl": "",
     "gitHubUrl": ""
@@ -17,7 +17,18 @@
   "assets": {
     "icon": "assets/icon.png"
   },
-  "externalJS": [ "external/d3.min.js" ],
+  "externalJS": [ 
+    "external/d3.min.js",  
+    "node_modules/jquery/dist/jquery.min.js",
+    "node_modules/d3/d3.min.js",
+    "node_modules/lodash/lodash.min.js",
+    "node_modules/globalize/lib/globalize.js",
+    "node_modules/globalize/lib/cultures/globalize.culture.en-US.js",
+    "node_modules/powerbi-visuals-utils-typeutils/lib/index.js",
+    "node_modules/powerbi-visuals-utils-svgutils/lib/index.js",
+    "node_modules/powerbi-visuals-utils-dataviewutils/lib/index.js",
+    "node_modules/powerbi-visuals-utils-formattingutils/lib/index.js"
+     ],
   "style": "style/visual.less",
   "capabilities": "capabilities.json",
   "dependencies": "dependencies.json"

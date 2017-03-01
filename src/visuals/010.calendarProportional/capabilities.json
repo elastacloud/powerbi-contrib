@@ -92,6 +92,16 @@
                             }
                         }
                     }
+                },
+                "labelFill": {
+                    "displayName": "Label Fill",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
                 }
             }
         },
