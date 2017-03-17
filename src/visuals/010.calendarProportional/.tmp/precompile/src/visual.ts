@@ -1,6 +1,6 @@
 /*
  *  Power BI Visualizations
- *  Calendar. V1.8.2
+ *  Calendar. V1.8.3
  *
  *  Copyright (c) Elastcloud Ltd
  *  All rights reserved. 
@@ -40,6 +40,11 @@
 
 import valueFormatter = powerbi.extensibility.utils.formatting.valueFormatter;
 module powerbi.extensibility.visual.PBI_CV_146ADA04_62C6_4009_AEF0_A1E2370BF39C  {
+    export interface ITooltipsInfo {
+        header?: string;
+        displayName: string;
+        value: string;
+    };
     //import SelectionManager = utility.SelectionManager;
     export interface IDateValue {
         color:string;
@@ -50,6 +55,8 @@ module powerbi.extensibility.visual.PBI_CV_146ADA04_62C6_4009_AEF0_A1E2370BF39C 
         dateStr: string;
         tooltipInfo?: TooltipShowOptions;
         format: string;
+        categoryName: string;
+        additionalTooltips: ITooltipsInfo[];
     };
     export class DateValue implements IDateValue{
         color:string;
@@ -60,6 +67,8 @@ module powerbi.extensibility.visual.PBI_CV_146ADA04_62C6_4009_AEF0_A1E2370BF39C 
         dateStr: string;
         tooltipInfo: TooltipShowOptions;
         format: string;
+        categoryName: string;
+        additionalTooltips: ITooltipsInfo[];
     }
     export interface CalendarViewModel {
         values: DateValue[][];
@@ -212,39 +221,6 @@ module powerbi.extensibility.visual.PBI_CV_146ADA04_62C6_4009_AEF0_A1E2370BF39C 
         }       
         private createChangeForFilterProperty(selectedId, filterPropertyIdentifier: DataViewObjectPropertyIdentifier): VisualObjectInstancesToPersist {
             return null;
-            
-            /*
-            var properties: { [propertyName: string]: DataViewPropertyValue } = {};
-            var selectors: data.Selector[] = [];
-
-            if (selectedId) {
-                selectors = [selectedId.selector];
-            }
-
-            var instance = {
-                objectName: filterPropertyIdentifier.objectName,
-                selector: undefined,
-                properties: properties
-            };
-
-            
-            related to tooltips which are redacted 
-
-            var filter = powerbi.data.ISemanticFilter.filterFromSelector(selectors, false);
-
-            if (filter == null) {
-                properties[filterPropertyIdentifier.propertyName] = {};
-                return <VisualObjectInstancesToPersist> {
-                    remove: [instance]
-                };
-            }
-            else {
-                properties[filterPropertyIdentifier.propertyName] = filter;
-                return <VisualObjectInstancesToPersist> {
-                    merge: [instance]
-                };
-            }
-            */
         }
 
 
@@ -303,19 +279,22 @@ module powerbi.extensibility.visual.PBI_CV_146ADA04_62C6_4009_AEF0_A1E2370BF39C 
         }
 
         private static getTooltipData(d: DateValue): any[] {
+            debugger;
             if (d.format) {
                 let iValueFormatter = valueFormatter.create({ format: d.format });
-                return [{
-                    displayName: d.dateStr,
+                return <ITooltipsInfo[]>[<ITooltipsInfo>{
+                    header: d.dateStr,
+                    displayName: d.categoryName,    
                     value: d.value < 0 ? "" : iValueFormatter.format(d.value)
-                }];
+                }].concat(d.additionalTooltips);
 
             }
             else {
-                return [{
-                    displayName: d.dateStr,
+                return <ITooltipsInfo[]>[<ITooltipsInfo>{
+                    header: d.dateStr,
+                    displayName: d.categoryName,
                     value: d.value < 0 ? "" : d.value.toString()
-                }];
+                }].concat(d.additionalTooltips);
             }
         }
         private prevSelection: d3.Selection<HTMLElement>;
@@ -439,9 +418,6 @@ module powerbi.extensibility.visual.PBI_CV_146ADA04_62C6_4009_AEF0_A1E2370BF39C 
                         } else {
                             this.selectionManager.clear();
                         }
-                        //todo:selection change
-                        //this.hostService.persistProperties(this.createChangeForFilterProperty(d.selector, slicerProps.filterPropertyIdentifier));
-
                         if (this.prevSelection) {
                             var oldStyle = this.prevSelection.attr("oldStyle");
                             this.prevSelection.attr("style", oldStyle);
@@ -666,12 +642,12 @@ module powerbi.extensibility.visual.PBI_CV_146ADA04_62C6_4009_AEF0_A1E2370BF39C 
                 var maxValue = 0;
                 var returnSet = [];
 
-                debugger;
-                if (this.isCategorical(dataView)) {
 
+                if (this.isCategorical(dataView)) {
                     if (dataView.categorical.categories[0].values) {
+                        var categoryDataColumn = dataView.categorical.categories[0].source
                         //find date objects
-                        if (dataView.categorical.categories[0].source.type.dateTime) {
+                        if (dataView.categorical.categories[0].source.type.dateTime) {                                 
                             returnSet = dataView.categorical.categories[0].values.map(
                                 (v:Date, i) => {
                                     if (v != null)  {                                    
@@ -682,13 +658,21 @@ module powerbi.extensibility.visual.PBI_CV_146ADA04_62C6_4009_AEF0_A1E2370BF39C 
                                                 domainMax: 0,
                                                 dateStr: "",
                                                 tooltipInfo: null,
-                                                value: dataView.categorical.values.map((val) => { return val.values[i]; })
+                                                value: dataView.categorical.values.filter((c)=>{ return (<any>c.source.roles).measure; }).map((val) => { return val.values[i]; })
                                                     .reduce((prev:number, curr:number) => { return prev + curr; }),
-                                                format: dataView.metadata.columns[1].format,
+                                                categoryName: dataView.categorical.values[0].source.displayName,
+                                                format: dataView.metadata.columns.filter((c)=> { return c.queryName != categoryDataColumn.queryName  })[0].format,
                                                 selector: this.hostService.createSelectionIdBuilder()
                                                     .withCategory(dataView.categorical.categories[0], i)
                                                     .withMeasure(dataView.categorical.values[0].source.queryName)
-                                                    .createSelectionId()
+                                                    .createSelectionId(),
+                                                additionalTooltips: dataView.categorical.values.filter((c)=>{ return (<any>c.source.roles).tooltips; })
+                                                    .map((c)=> { 
+                                                            return <ITooltipsInfo> {
+                                                                displayName: c.source.displayName,
+                                                                value: c.values[i]
+                                                            };
+                                                    })
                                         }
                                         
                                         if (v) {

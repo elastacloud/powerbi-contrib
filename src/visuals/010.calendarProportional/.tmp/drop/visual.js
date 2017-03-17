@@ -11740,7 +11740,7 @@ var powerbi;
 })(powerbi || (powerbi = {}));
 /*
  *  Power BI Visualizations
- *  Calendar. V1.8.2
+ *  Calendar. V1.8.3
  *
  *  Copyright (c) Elastcloud Ltd
  *  All rights reserved.
@@ -11785,6 +11785,7 @@ var powerbi;
         (function (visual) {
             var PBI_CV_146ADA04_62C6_4009_AEF0_A1E2370BF39C;
             (function (PBI_CV_146ADA04_62C6_4009_AEF0_A1E2370BF39C) {
+                ;
                 ;
                 var DateValue = (function () {
                     function DateValue() {
@@ -11940,38 +11941,6 @@ var powerbi;
                     };
                     CalendarVisual.prototype.createChangeForFilterProperty = function (selectedId, filterPropertyIdentifier) {
                         return null;
-                        /*
-                        var properties: { [propertyName: string]: DataViewPropertyValue } = {};
-                        var selectors: data.Selector[] = [];
-            
-                        if (selectedId) {
-                            selectors = [selectedId.selector];
-                        }
-            
-                        var instance = {
-                            objectName: filterPropertyIdentifier.objectName,
-                            selector: undefined,
-                            properties: properties
-                        };
-            
-                        
-                        related to tooltips which are redacted
-            
-                        var filter = powerbi.data.ISemanticFilter.filterFromSelector(selectors, false);
-            
-                        if (filter == null) {
-                            properties[filterPropertyIdentifier.propertyName] = {};
-                            return <VisualObjectInstancesToPersist> {
-                                remove: [instance]
-                            };
-                        }
-                        else {
-                            properties[filterPropertyIdentifier.propertyName] = filter;
-                            return <VisualObjectInstancesToPersist> {
-                                merge: [instance]
-                            };
-                        }
-                        */
                     };
                     CalendarVisual.prototype.enumerateObjectInstances = function (options) {
                         //debugger;
@@ -12024,18 +11993,21 @@ var powerbi;
                         return instances;
                     };
                     CalendarVisual.getTooltipData = function (d) {
+                        debugger;
                         if (d.format) {
                             var iValueFormatter = valueFormatter.create({ format: d.format });
                             return [{
-                                    displayName: d.dateStr,
+                                    header: d.dateStr,
+                                    displayName: d.categoryName,
                                     value: d.value < 0 ? "" : iValueFormatter.format(d.value)
-                                }];
+                                }].concat(d.additionalTooltips);
                         }
                         else {
                             return [{
-                                    displayName: d.dateStr,
+                                    header: d.dateStr,
+                                    displayName: d.categoryName,
                                     value: d.value < 0 ? "" : d.value.toString()
-                                }];
+                                }].concat(d.additionalTooltips);
                         }
                     };
                     CalendarVisual.prototype.draw = function (dataView, element, itemWidth, itemHeight, calendarViewModel, colors) {
@@ -12148,8 +12120,6 @@ var powerbi;
                                 else {
                                     _this.selectionManager.clear();
                                 }
-                                //todo:selection change
-                                //this.hostService.persistProperties(this.createChangeForFilterProperty(d.selector, slicerProps.filterPropertyIdentifier));
                                 if (_this.prevSelection) {
                                     var oldStyle = _this.prevSelection.attr("oldStyle");
                                     _this.prevSelection.attr("style", oldStyle);
@@ -12341,9 +12311,9 @@ var powerbi;
                             var minValue = 0;
                             var maxValue = 0;
                             var returnSet = [];
-                            debugger;
                             if (this.isCategorical(dataView)) {
                                 if (dataView.categorical.categories[0].values) {
+                                    var categoryDataColumn = dataView.categorical.categories[0].source;
                                     //find date objects
                                     if (dataView.categorical.categories[0].source.type.dateTime) {
                                         returnSet = dataView.categorical.categories[0].values.map(function (v, i) {
@@ -12355,13 +12325,21 @@ var powerbi;
                                                         domainMax: 0,
                                                         dateStr: "",
                                                         tooltipInfo: null,
-                                                        value: dataView.categorical.values.map(function (val) { return val.values[i]; })
+                                                        value: dataView.categorical.values.filter(function (c) { return c.source.roles.measure; }).map(function (val) { return val.values[i]; })
                                                             .reduce(function (prev, curr) { return prev + curr; }),
-                                                        format: dataView.metadata.columns[1].format,
+                                                        categoryName: dataView.categorical.values[0].source.displayName,
+                                                        format: dataView.metadata.columns.filter(function (c) { return c.queryName != categoryDataColumn.queryName; })[0].format,
                                                         selector: _this.hostService.createSelectionIdBuilder()
                                                             .withCategory(dataView.categorical.categories[0], i)
                                                             .withMeasure(dataView.categorical.values[0].source.queryName)
-                                                            .createSelectionId()
+                                                            .createSelectionId(),
+                                                        additionalTooltips: dataView.categorical.values.filter(function (c) { return c.source.roles.tooltips; })
+                                                            .map(function (c) {
+                                                            return {
+                                                                displayName: c.source.displayName,
+                                                                value: c.values[i]
+                                                            };
+                                                        })
                                                     };
                                                     if (v) {
                                                         retVal.dateStr = v.getFullYear() + "-" + CalendarVisual.pad(v.getMonth() + 1) +
@@ -12502,11 +12480,11 @@ var powerbi;
     (function (visuals) {
         var plugins;
         (function (plugins) {
-            plugins.PBI_CV_146ADA04_62C6_4009_AEF0_A1E2370BF39C = {
-                name: 'PBI_CV_146ADA04_62C6_4009_AEF0_A1E2370BF39C',
+            plugins.PBI_CV_146ADA04_62C6_4009_AEF0_A1E2370BF39C_DEBUG = {
+                name: 'PBI_CV_146ADA04_62C6_4009_AEF0_A1E2370BF39C_DEBUG',
                 displayName: 'CalendarProportional',
                 class: 'CalendarVisual',
-                version: '1.8.2',
+                version: '1.8.3',
                 apiVersion: '1.3.0',
                 create: function (options) { return new powerbi.extensibility.visual.PBI_CV_146ADA04_62C6_4009_AEF0_A1E2370BF39C.CalendarVisual(options); },
                 custom: true

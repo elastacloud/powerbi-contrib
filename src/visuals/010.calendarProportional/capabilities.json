@@ -9,6 +9,11 @@
             "displayName": "Measure Data",
             "name": "measure",
             "kind": "Measure"
+        },
+        {
+            "displayName": "Tooltips",
+            "name": "tooltips",
+            "kind": "Measure"
         }
     ],
     "dataViewMappings": [
@@ -27,6 +32,10 @@
                         {
                             "bind": {
                                 "to": "measure"
+                            }
+                        },{
+                            "bind": {
+                                "to": "tooltips"
                             }
                         }
                     ]
