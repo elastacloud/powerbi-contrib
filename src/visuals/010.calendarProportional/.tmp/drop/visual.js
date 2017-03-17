@@ -11740,7 +11740,7 @@ var powerbi;
 })(powerbi || (powerbi = {}));
 /*
  *  Power BI Visualizations
- *  Calendar. V1.8.3
+ *  Calendar. V2.0.1
  *
  *  Copyright (c) Elastcloud Ltd
  *  All rights reserved.
@@ -11817,10 +11817,22 @@ var powerbi;
                         this.cellSize = 1; // cell size
                         this.getDaysOfYear = function (year) { return d3.time.days(new Date(year, 0, 1), new Date(year + 1, 0, 1)); };
                         this.getXPosition = function (date) {
-                            return (d3.time.weekOfYear(date.date) * _this.cellSize) + 1;
+                            //debugger;
+                            if (_this.settings.mondayWeekStart) {
+                                return (d3.time.mondayOfYear(date.date) * _this.cellSize) + 1;
+                            }
+                            else {
+                                return (d3.time.weekOfYear(date.date) * _this.cellSize) + 1;
+                            }
                         };
                         this.getYPosition = function (date) {
-                            return (date.date.getDay() * _this.cellSize) + 1;
+                            //debugger;
+                            if (_this.settings.mondayWeekStart) {
+                                return (((date.date.getDay() + 6) % 7) * _this.cellSize) + 1;
+                            }
+                            else {
+                                return (date.date.getDay() * _this.cellSize) + 1;
+                            }
                         };
                         this.getXPositionWithOffset = function (date) {
                             if (!date.value || date.value === null) {
@@ -11846,7 +11858,12 @@ var powerbi;
                             return (date.value / date.domainMax) * _this.cellSize;
                         };
                         this.monthPath = function (t0) {
-                            var t1 = new Date(t0.getFullYear(), t0.getMonth() + 1, 0), d0 = t0.getDay(), w0 = d3.time.weekOfYear(t0), d1 = t1.getDay(), w1 = d3.time.weekOfYear(t1);
+                            if (_this.settings.mondayWeekStart) {
+                                var t1 = new Date(t0.getFullYear(), t0.getMonth() + 1, 0), d0 = (t0.getDay() + 6) % 7, w0 = d3.time.mondayOfYear(t0), d1 = (t1.getDay() + 6) % 7, w1 = d3.time.mondayOfYear(t1);
+                            }
+                            else {
+                                var t1 = new Date(t0.getFullYear(), t0.getMonth() + 1, 0), d0 = t0.getDay(), w0 = d3.time.weekOfYear(t0), d1 = t1.getDay(), w1 = d3.time.weekOfYear(t1);
+                            }
                             return "M" + (w0 + 1) * _this.cellSize + "," + d0 * _this.cellSize + "H" + w0 * _this.cellSize + "V" + 7 * _this.cellSize + "H" + w1 * _this.cellSize + "V" + (d1 + 1) * _this.cellSize + "H" + (w1 + 1) * _this.cellSize + "V" + 0 + "H" + (w0 + 1) * _this.cellSize + "Z";
                         };
                         console.log('Visual constructor', options);
@@ -11868,7 +11885,8 @@ var powerbi;
                             gridStroke: "#b1b1b1",
                             backgroundFill: "#fff",
                             selectColor: "#f00",
-                            labelFill: "#ccc"
+                            labelFill: "#ccc",
+                            mondayWeekStart: false
                         };
                     }
                     CalendarVisual.prototype.isResize = function (options) {
@@ -11989,11 +12007,23 @@ var powerbi;
                                 instances.push(general);
                                 break;
                             }
+                            case "localization": {
+                                var localization = {
+                                    objectName: "localization",
+                                    displayName: "Localization",
+                                    selector: null,
+                                    properties: {
+                                        mondayWeekStart: this.settings.mondayWeekStart
+                                    }
+                                };
+                                instances.push(localization);
+                                break;
+                            }
                         }
                         return instances;
                     };
                     CalendarVisual.getTooltipData = function (d) {
-                        debugger;
+                        //debugger;
                         if (d.format) {
                             var iValueFormatter = valueFormatter.create({ format: d.format });
                             return [{
@@ -12041,24 +12071,33 @@ var powerbi;
                             textGroup.append("text")
                                 .style("text-anchor", "middle")
                                 .text("M")
-                                .attr("transform", "translate(0.8 2) scale(0.8)")
+                                .attr("transform", "translate(0.8 " + (this.settings.mondayWeekStart ? 1 : 2) + ") scale(0.8)")
                                 .attr("x", 1)
                                 .attr("y", this.cellSize)
                                 .style("font-size", "1px");
                             textGroup.append("text")
                                 .style("text-anchor", "middle")
                                 .text("W")
-                                .attr("transform", "translate(0.8 4) scale(0.8)")
+                                .attr("transform", "translate(0.8 " + (this.settings.mondayWeekStart ? 3 : 4) + ") scale(0.8)")
                                 .attr("x", 1)
                                 .attr("y", this.cellSize)
                                 .style("font-size", "1px");
                             textGroup.append("text")
                                 .style("text-anchor", "middle")
                                 .text("F")
-                                .attr("transform", "translate(0.8 6) scale(0.8)")
+                                .attr("transform", "translate(0.8 " + (this.settings.mondayWeekStart ? 5 : 6) + ") scale(0.8)")
                                 .attr("x", 1)
                                 .attr("y", this.cellSize)
                                 .style("font-size", "1px");
+                            if (this.settings.mondayWeekStart) {
+                                textGroup.append("text")
+                                    .style("text-anchor", "middle")
+                                    .text("S")
+                                    .attr("transform", "translate(0.8 7) scale(0.8)")
+                                    .attr("x", 1)
+                                    .attr("y", this.cellSize)
+                                    .style("font-size", "1px");
+                            }
                             textGroup.append("text")
                                 .attr("transform", "translate(" + (this.width - (3 * this.cellSize)) + "," + this.cellSize * 3.5 + ")rotate(90)")
                                 .style("text-anchor", "middle")
@@ -12284,6 +12323,9 @@ var powerbi;
                                 this.settings.relativeSize = objects.general.relativeSize;
                             }
                         }
+                        if (objects && objects.localization) {
+                            this.settings.mondayWeekStart = objects.localization.mondayWeekStart;
+                        }
                         if (dataView && dataView.metadata.objects) {
                             this.settings.cellsColorTop = this.getSolidColorFromMetadata(dataView.metadata.objects, "cellColor", "maxColor", this.settings.cellsColorTop);
                             this.settings.cellsColorBottom = this.getSolidColorFromMetadata(dataView.metadata.objects, "cellColor", "minColor", this.settings.cellsColorBottom);
@@ -12480,11 +12522,11 @@ var powerbi;
     (function (visuals) {
         var plugins;
         (function (plugins) {
-            plugins.PBI_CV_146ADA04_62C6_4009_AEF0_A1E2370BF39C_DEBUG = {
-                name: 'PBI_CV_146ADA04_62C6_4009_AEF0_A1E2370BF39C_DEBUG',
+            plugins.PBI_CV_146ADA04_62C6_4009_AEF0_A1E2370BF39C = {
+                name: 'PBI_CV_146ADA04_62C6_4009_AEF0_A1E2370BF39C',
                 displayName: 'CalendarProportional',
                 class: 'CalendarVisual',
-                version: '1.8.3',
+                version: '2.0.1',
                 apiVersion: '1.3.0',
                 create: function (options) { return new powerbi.extensibility.visual.PBI_CV_146ADA04_62C6_4009_AEF0_A1E2370BF39C.CalendarVisual(options); },
                 custom: true

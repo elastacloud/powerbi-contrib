@@ -148,6 +148,17 @@
                     }
                 }
             }
+        },
+        "localization": {
+            "displayName": "Localization",
+            "properties": {
+                "mondayWeekStart": {
+                    "displayName": "Monday Week start?",
+                    "type": {
+                        "bool": true
+                    }
+                }
+            }
         }
     }
 }

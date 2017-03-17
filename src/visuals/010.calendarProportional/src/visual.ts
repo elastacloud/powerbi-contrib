@@ -1,6 +1,6 @@
 /*
  *  Power BI Visualizations
- *  Calendar. V1.8.3
+ *  Calendar. V2.0.1
  *
  *  Copyright (c) Elastcloud Ltd
  *  All rights reserved. 
@@ -98,6 +98,7 @@ module powerbi.extensibility.visual {
         backgroundFill:string;
         selectColor:string;
         labelFill:string;
+        mondayWeekStart:boolean;
     }
 
     export class CalendarVisual implements IVisual {
@@ -144,7 +145,8 @@ module powerbi.extensibility.visual {
                 gridStroke: "#b1b1b1",
                 backgroundFill: "#fff",
                 selectColor: "#f00", 
-                labelFill: "#ccc"
+                labelFill: "#ccc",
+                mondayWeekStart:false
             };
         }
 
@@ -273,13 +275,26 @@ module powerbi.extensibility.visual {
                     instances.push(general);
                     break;
                 }
+                case "localization": {
+                    var localization: VisualObjectInstance = {
+                        objectName: "localization",
+                        displayName: "Localization",
+                        selector: null,
+                        properties: {
+                            mondayWeekStart: this.settings.mondayWeekStart
+                        }
+                    };
+
+                    instances.push(localization);
+                    break;
+                }
             }
             
             return instances;
         }
 
         private static getTooltipData(d: DateValue): any[] {
-            debugger;
+            //debugger;
             if (d.format) {
                 let iValueFormatter = valueFormatter.create({ format: d.format });
                 return <ITooltipsInfo[]>[<ITooltipsInfo>{
@@ -333,7 +348,7 @@ module powerbi.extensibility.visual {
                 textGroup.append("text")
                     .style("text-anchor", "middle")
                     .text("M")
-                    .attr("transform", "translate(0.8 2) scale(0.8)")
+                    .attr("transform", "translate(0.8 " + (this.settings.mondayWeekStart ? 1 : 2) + ") scale(0.8)")
                     .attr("x", 1)
                     .attr("y", this.cellSize)                    
                     .style("font-size", "1px");
@@ -341,7 +356,7 @@ module powerbi.extensibility.visual {
                 textGroup.append("text")
                     .style("text-anchor", "middle")
                     .text("W")
-                    .attr("transform", "translate(0.8 4) scale(0.8)")
+                    .attr("transform", "translate(0.8 " + (this.settings.mondayWeekStart ? 3 : 4) + ") scale(0.8)")
                     .attr("x", 1)
                     .attr("y", this.cellSize)
                     .style("font-size", "1px");
@@ -349,10 +364,20 @@ module powerbi.extensibility.visual {
                 textGroup.append("text")
                     .style("text-anchor", "middle")
                     .text("F")
-                    .attr("transform", "translate(0.8 6) scale(0.8)")
+                    .attr("transform", "translate(0.8 " + (this.settings.mondayWeekStart ? 5 : 6) + ") scale(0.8)")
                     .attr("x", 1)
                     .attr("y", this.cellSize)
                     .style("font-size", "1px");
+
+                if (this.settings.mondayWeekStart) {
+                    textGroup.append("text")
+                        .style("text-anchor", "middle")
+                        .text("S")
+                        .attr("transform", "translate(0.8 7) scale(0.8)")
+                        .attr("x", 1)
+                        .attr("y", this.cellSize)
+                        .style("font-size", "1px");
+                }
 
                 textGroup.append("text")
                     .attr("transform", "translate(" + (this.width - (3 * this.cellSize)) + "," + this.cellSize * 3.5 + ")rotate(90)")
@@ -610,7 +635,13 @@ module powerbi.extensibility.visual {
                 if (objects.general.relativeSize !== null) {
                     this.settings.relativeSize = objects.general.relativeSize;                
                 }
-            }     
+            }   
+
+            if (objects && objects.localization)
+            {
+                this.settings.mondayWeekStart = objects.localization.mondayWeekStart;
+            }  
+
             if (dataView && dataView.metadata.objects) {                
                 this.settings.cellsColorTop = this.getSolidColorFromMetadata(dataView.metadata.objects, "cellColor", "maxColor", this.settings.cellsColorTop);
                 this.settings.cellsColorBottom = this.getSolidColorFromMetadata(dataView.metadata.objects, "cellColor", "minColor", this.settings.cellsColorBottom);
@@ -807,11 +838,24 @@ module powerbi.extensibility.visual {
 
         private getDaysOfYear = (year: number) => { return d3.time.days(new Date(year, 0, 1), new Date(year + 1, 0, 1)); };
         public getXPosition = (date: DateValue) => { 
-            return (d3.time.weekOfYear(date.date) * this.cellSize) + 1; 
+            //debugger;
+            if (this.settings.mondayWeekStart) {
+                    return (d3.time.mondayOfYear(date.date) * this.cellSize) + 1; 
+                    //d3.time.mondayOfYear(date.date);
+                }
+                else {
+                    return (d3.time.weekOfYear(date.date) * this.cellSize) + 1; 
+                }
             };
         public getYPosition = (date: DateValue) => {
+            //debugger;
+            if (this.settings.mondayWeekStart) {                
+                return (((date.date.getDay()+6)%7)*this.cellSize)+1;
+            }
+            else {
              return  (date.date.getDay() * this.cellSize) + 1; 
-             };
+            }
+        };
         public getXPositionWithOffset = (date: DateValue) => { 
             if (!date.value || date.value === null)
             {
@@ -843,7 +887,14 @@ module powerbi.extensibility.visual {
             return (date.value/date.domainMax) * this.cellSize;
         }
         private monthPath = (t0) => {
-            var t1 = new Date(t0.getFullYear(), t0.getMonth() + 1, 0), d0 = t0.getDay(), w0 = d3.time.weekOfYear(t0), d1 = t1.getDay(), w1 = d3.time.weekOfYear(t1);
+            if (this.settings.mondayWeekStart)
+            {
+                var t1 = new Date(t0.getFullYear(), t0.getMonth() + 1, 0), d0:number = (t0.getDay()+6)%7, w0 = d3.time.mondayOfYear(t0), d1 = (t1.getDay()+6)%7, w1 = d3.time.mondayOfYear(t1);
+            }
+            else {
+                var t1 = new Date(t0.getFullYear(), t0.getMonth() + 1, 0), d0:number = t0.getDay(), w0 = d3.time.weekOfYear(t0), d1 = t1.getDay(), w1 = d3.time.weekOfYear(t1);
+            }
+        
             return "M" + (w0 + 1) * this.cellSize + "," + d0 * this.cellSize + "H" + w0 * this.cellSize + "V" + 7 * this.cellSize + "H" + w1 * this.cellSize + "V" + (d1 + 1) * this.cellSize + "H" + (w1 + 1) * this.cellSize + "V" + 0 + "H" + (w0 + 1) * this.cellSize + "Z";
         };
     }
