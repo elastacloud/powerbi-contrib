@@ -1,0 +1,26 @@
+{
+  "visual": {
+    "name": "gmaps",
+    "displayName": "gmaps",
+    "guid": "PBI_CV_4688AE0B_448D_474B_AF4A_0262234464E8",
+    "visualClassName": "GMapsVisual",
+    "version": "1.0.0",
+    "description": "",
+    "supportUrl": "",
+    "gitHubUrl": ""
+  },
+  "apiVersion": "1.3.0",
+  "author": {
+    "name": "",
+    "email": ""
+  },
+  "assets": {
+    "icon": "assets/icon.png"
+  },
+  "externalJS": [
+    "node_modules/jquery/dist/jquery.min.js"
+  ],
+  "style": "style/visual.less",
+  "capabilities": "capabilities.json",
+  "dependencies": "dependencies.json"
+}
