@@ -1,0 +1,24 @@
+{
+  "visual": {
+    "name": "loremflicker",
+    "displayName": "loremflicker",
+    "guid": "PBI_CV_3855BC2D_7A89_4C98_931B_4246DEC9D8D8",
+    "visualClassName": "Visual",
+    "version": "1.0.0",
+    "description": "",
+    "supportUrl": "",
+    "gitHubUrl": ""
+  },
+  "apiVersion": "1.3.0",
+  "author": {
+    "name": "",
+    "email": ""
+  },
+  "assets": {
+    "icon": "assets/icon.png"
+  },
+  "externalJS": [],
+  "style": "style/visual.less",
+  "capabilities": "capabilities.json",
+  "dependencies": "dependencies.json"
+}
