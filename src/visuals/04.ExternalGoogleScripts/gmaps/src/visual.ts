@@ -30,7 +30,10 @@ declare module google.maps {
         constructor(lat:number, long: number);
     }
     export class Map {        
-        constructor(mapDiv: Element, opts?: any);fitBounds(bounds: any): void;
+        constructor(mapDiv: Element, opts?: any);
+        fitBounds(bounds: any): void;
+        setCenter(center:any):void;
+        setZoom(level:number):void;
     }
     export class Marker {
         constructor(opts?: any);
@@ -110,32 +113,49 @@ module powerbi.extensibility.visual {
 
         public drawData(dataViews : DataView[]) : void {
             if (!GMapsVisual.visual.isMapReady || !GMapsVisual.visual.isDataAvailable) {                
-            window.console.log('no map ready or data ready');
-            return;
+                window.console.log('no map ready or data ready');
+                return;
             }
-            //note this should be a convert func!
-            this.data = <GMapsVisualData> {
-                locations: [
-                    { location: new google.maps.LatLng(51.529598, -0.133059) , weight: 0.9},
-                    { location: new google.maps.LatLng(51.528851, -0.131428) , weight: 0.8},
-                    { location: new google.maps.LatLng(51.528771, -0.132329) , weight: 0.7},
-                    { location: new google.maps.LatLng(51.535445, -0.118597) , weight: 0.7},
-                    { location: new google.maps.LatLng(51.527863, -0.131385) , weight: 0.8},
-                    { location: new google.maps.LatLng(51.527142, -0.12924) , weight: 0.9},
-                    { location: new google.maps.LatLng(51.528904, -0.126836) , weight: 0.9},                    
-                    { location: new google.maps.LatLng(51.532456, -0.122535), weight: 0.7},
-                    { location: new google.maps.LatLng(51.532426, -0.122485), weight: 0.3},
-                    { location: new google.maps.LatLng(51.532396, -0.122685), weight: 0.8},
-                    { location: new google.maps.LatLng(51.532506, -0.121985), weight: 0.4},
-                    { location: new google.maps.LatLng(51.5325166, -0.122985), weight: 0.7},
-                    { location: new google.maps.LatLng(51.532446, -0.122585), weight: 0.5},
-                ]
-            };
+            var midLat, midLon;
+            if (dataViews.length > 0) {
+                if (dataViews[0].table.rows) {
+                    this.data = <GMapsVisualData> { locations : dataViews[0].table.rows.map((v:number[])=> { 
+                        return <IWeightLocation>{ location :  new google.maps.LatLng(v[0], v[1]), weight: v[2]};
+                    }) };
+
+                    midLat = 53.965579;
+                    midLon = -1.080952;
+
+                    this.map.setCenter({ lat: midLat, lng: midLon});
+                    this.map.setZoom(12);
+                }
+            }
+            else {
+                console.log("Reverting to default"); 
+                this.data = <GMapsVisualData> {
+                    locations: [
+                        { location: new google.maps.LatLng(51.529598, -0.133059) , weight: 0.9},
+                        { location: new google.maps.LatLng(51.528851, -0.131428) , weight: 0.8},
+                        { location: new google.maps.LatLng(51.528771, -0.132329) , weight: 0.7},
+                        { location: new google.maps.LatLng(51.535445, -0.118597) , weight: 0.7},
+                        { location: new google.maps.LatLng(51.527863, -0.131385) , weight: 0.8},
+                        { location: new google.maps.LatLng(51.527142, -0.12924) , weight: 0.9},
+                        { location: new google.maps.LatLng(51.528904, -0.126836) , weight: 0.9},                    
+                        { location: new google.maps.LatLng(51.532456, -0.122535), weight: 0.7},
+                        { location: new google.maps.LatLng(51.532426, -0.122485), weight: 0.3},
+                        { location: new google.maps.LatLng(51.532396, -0.122685), weight: 0.8},
+                        { location: new google.maps.LatLng(51.532506, -0.121985), weight: 0.4},
+                        { location: new google.maps.LatLng(51.5325166, -0.122985), weight: 0.7},
+                        { location: new google.maps.LatLng(51.532446, -0.122585), weight: 0.5},
+                    ]
+                };
+            }
+
+           
           var heatmap = new google.maps.visualization.HeatmapLayer({
               data: this.data.locations
             });
             heatmap.setMap(this.map);
-            
         }
         
         public onMapsReady() : void {
