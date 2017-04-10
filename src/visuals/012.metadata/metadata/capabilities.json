@@ -1,0 +1,17 @@
+{
+    "dataRoles": [
+        {
+            "displayName": "Data in Bytes",
+            "name": "Y",
+            "kind": "Measure"
+        }
+    ],
+    "dataViewMappings": [{
+        "conditions": [
+            { "Y": { "max": 1 } }
+        ],
+        "single": {
+            "role": "Y"
+        }
+    }]
+}

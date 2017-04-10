@@ -39,6 +39,7 @@ module powerbi.extensibility.visual {
         }
 
         public update(options: VisualUpdateOptions) {
+            this.buildSettings(options);
             var that = this;
             if (that.loader)
             {
@@ -60,12 +61,12 @@ module powerbi.extensibility.visual {
                 return;
             }
 
-            var uri = "https://loremflickr.com/"+Math.floor(options.viewport.width)+"/"+Math.floor(options.viewport.height)+"/"+this.getAnimal(options)+"/all";
+            var uri = "https://loremflickr.com/"+Math.floor(options.viewport.width)+"/"+Math.floor(options.viewport.height)+"/"+this.config.animal+"/all";
             console.log('Loading', uri);
 			this._ele.innerHTML = "<img src='"+uri+"'>";
         }
 
-        private getAnimal(options:VisualUpdateOptions):string
+        private buildSettings(options:VisualUpdateOptions):string
         {
             if (options.dataViews.length > 0 && options.dataViews[0].metadata.objects){ 
                 this.config.animal = options.dataViews[0].metadata.objects["animal"]["animal"].toString();
