@@ -14,7 +14,6 @@
     "node_modules/powerbi-visuals-utils-svgutils/lib/index.d.ts",
     "node_modules/powerbi-visuals-utils-dataviewutils/lib/index.d.ts",
     "node_modules/powerbi-visuals-utils-formattingutils/lib/index.d.ts",
-    "external/d3.min.js",
     "src/tooltipServiceWrapper.ts",
     "src/visual.ts"
   ]
