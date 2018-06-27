@@ -689,7 +689,7 @@ module powerbi.extensibility.visual {
                                                 domainMax: 0,
                                                 dateStr: "",
                                                 tooltipInfo: null,
-                                                value: dataView.categorical.values.filter((c)=>{ return (<any>c.source.roles).measure; }).map((val) => { return val.values[i]; })
+                                                value: dataView.categorical.values.filter((c)=>{ return (<any>c.source.roles).Y; }).map((val) => { return val.values[i]; })
                                                     .reduce((prev:number, curr:number) => { return prev + curr; }),
                                                 categoryName: dataView.categorical.values[0].source.displayName,
                                                 format: dataView.metadata.columns.filter((c)=> { return c.queryName != categoryDataColumn.queryName  })[0].format,

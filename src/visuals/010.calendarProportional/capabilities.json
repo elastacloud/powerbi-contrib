@@ -2,12 +2,12 @@
     "dataRoles": [
         {
             "displayName": "Category Data",
-            "name": "category",
+            "name": "Category",
             "kind": "Grouping"
         },
         {
             "displayName": "Measure Data",
-            "name": "measure",
+            "name": "Y",
             "kind": "Measure"
         },
         {
@@ -21,7 +21,7 @@
             "categorical": {
                 "categories": {
                     "for": {
-                        "in": "category"
+                        "in": "Category"
                     },
                     "dataReductionAlgorithm": {
                         "top": {}
@@ -31,7 +31,7 @@
                     "select": [
                         {
                             "bind": {
-                                "to": "measure"
+                                "to": "Y"
                             }
                         },{
                             "bind": {
